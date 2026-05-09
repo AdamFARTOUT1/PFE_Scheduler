@@ -1,90 +1,113 @@
-:root {
-    --bleu: #3498db;
-    --vert: #27ae60;
-    --rouge: #e74c3c;
-    --orange: #f39c12;
-    --noir: #1a252f;
-}
-
 body {
-    font-family: Georgia, serif;
+    font-family: Arial, sans-serif;
     background-color: #f4f6f8;
     color: #2c3e50;
     padding-top: 60px;
 }
 
-.navbar-inverse {
-    background-color: var(--noir);
-    border: none;
-    border-bottom: 3px solid var(--vert);
+/* ---- Navbar ---- */
+.navbar-custom {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 55px;
+    background-color: #2d6abf;
+    border-bottom: 2px solid #1a4f9c;
 }
 
-.navbar-inverse .navbar-brand {
-    color: var(--vert) !important;
+.navbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    padding: 0 30px;
+}
+
+.navbar-logo {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.navbar-logo:hover {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.navbar-liens {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+.navbar-liens li a {
+    color: #ffffff;
+    text-decoration: none;
+    padding: 8px 18px;
+    display: block;
+    font-size: 14px;
+}
+
+.navbar-liens li a:hover {
+    color: #ffffff;
+    background-color: #1a4f9c;
+    text-decoration: none;
+}
+
+.navbar-liens li a.actif {
+    color: #ffffff;
+    background-color: #1a4f9c;
     font-weight: bold;
 }
 
-.navbar-inverse .nav > li > a {
-    color: #bdc3c7 !important;
+/* ---- Footer ---- */
+.pied-page {
+    background-color: #2d6abf;
+    color: #ffffff;
+    padding: 15px 0;
+    border-top: 2px solid #1a4f9c;
+    font-size: 13px;
+    text-align: center;
 }
 
-.navbar-inverse .nav > li > a:hover,
-.navbar-inverse .nav > li.active > a {
-    color: #fff !important;
-    background-color: #2c3e50 !important;
+.pied-page strong {
+    color: #ffffff;
 }
 
-.navbar-inverse .nav > li.active > a {
-    border-bottom: 3px solid var(--vert);
-}
-
+/* ---- Contenu principal ---- */
 .contenu-principal {
     min-height: calc(100vh - 110px);
     padding: 20px 0;
 }
 
-.pied-page {
-    background-color: var(--noir);
-    color: #7f8c8d;
-    padding: 15px 0;
-    border-top: 3px solid var(--vert);
-    font-size: 13px;
-}
-
-.pied-page strong {
-    color: var(--vert);
-}
-
+/* ---- Cartes statistiques ---- */
 .carte-stat {
-    background: #fff;
-    border-radius: 8px;
+    background: #ffffff;
+    border-radius: 6px;
     padding: 25px 20px;
     text-align: center;
-    border-left: 5px solid var(--vert);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-left: 5px solid #2d6abf;
     margin-bottom: 20px;
 }
 
-.carte-stat:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
-}
-
 .carte-stat .nombre {
-    font-size: 42px;
+    font-size: 40px;
     font-weight: bold;
-    color: var(--vert);
+    color: #2d6abf;
 }
 
 .carte-stat .label {
     font-size: 13px;
     color: #7f8c8d;
     text-transform: uppercase;
-    letter-spacing: 1px;
 }
 
+/* ---- Badges filières ---- */
 .badge-id {
-    background-color: var(--bleu);
+    background-color: #3498db;
     color: #fff;
     padding: 3px 8px;
     border-radius: 4px;
@@ -92,8 +115,8 @@ body {
     font-weight: bold;
 }
 
-.badge-tdai {
-    background-color: var(--vert);
+.badge-tdia {
+    background-color: #27ae60;
     color: #fff;
     padding: 3px 8px;
     border-radius: 4px;
@@ -101,6 +124,7 @@ body {
     font-weight: bold;
 }
 
+/* ---- Barres CSS ---- */
 .barre-conteneur {
     background-color: #ecf0f1;
     border-radius: 4px;
@@ -111,51 +135,68 @@ body {
 
 .barre {
     height: 100%;
+    background-color: #2d6abf;
     border-radius: 4px;
-    background-color: var(--vert);
-    display: flex;
-    align-items: center;
-    padding-left: 8px;
-    font-size: 12px;
     color: #fff;
+    font-size: 12px;
     font-weight: bold;
+    padding-left: 8px;
     min-width: 30px;
 }
 
-.barre.orange { background-color: var(--orange); }
-.barre.rouge  { background-color: var(--rouge); }
+.barre.orange {
+    background-color: #f39c12;
+}
 
+.barre.rouge {
+    background-color: #e74c3c;
+}
+
+/* ---- Anomalies vérification ---- */
 .anomalie {
-    border-radius: 8px;
+    border-radius: 6px;
     padding: 15px 20px;
     margin-bottom: 12px;
     border-left: 5px solid;
 }
 
-.anomalie.erreur  { background-color: #fdf2f2; border-color: var(--rouge); }
-.anomalie.warning { background-color: #fef9ec; border-color: var(--orange); }
-.anomalie.ok      { background-color: #eafaf1; border-color: var(--vert); }
+.anomalie.erreur {
+    background-color: #fdf2f2;
+    border-color: #e74c3c;
+}
 
+.anomalie.warning {
+    background-color: #fef9ec;
+    border-color: #f39c12;
+}
+
+.anomalie.ok {
+    background-color: #eafaf1;
+    border-color: #27ae60;
+}
+
+/* ---- Filtres planning ---- */
 .filtres {
-    background: #fff;
+    background: #ffffff;
     padding: 15px 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border-radius: 6px;
     margin-bottom: 20px;
 }
 
+/* ---- Titre de page ---- */
 .titre-page {
     font-size: 24px;
     font-weight: bold;
-    color: var(--noir);
+    color: #1a252f;
     margin-bottom: 25px;
     padding-bottom: 10px;
-    border-bottom: 3px solid var(--vert);
+    border-bottom: 3px solid #2d6abf;
 }
 
+/* ---- Bouton générer ---- */
 .btn-generer {
-    background-color: var(--vert);
-    color: #fff;
+    background-color: #27ae60;
+    color: #ffffff;
     border: none;
     padding: 10px 25px;
     border-radius: 6px;
@@ -166,12 +207,13 @@ body {
 
 .btn-generer:hover {
     background-color: #219a52;
-    color: #fff;
+    color: #ffffff;
 }
 
+/* ---- Tableau planning ---- */
 #tableau-planning th {
-    background-color: var(--noir);
-    color: #fff;
+    background-color: #2d6abf;
+    color: #ffffff;
     text-align: center;
 }
 
@@ -180,5 +222,16 @@ body {
     vertical-align: middle;
 }
 
-.cellule-id   { background-color: #d6eaf8; border-left: 4px solid var(--bleu); border-radius: 4px; padding: 6px; }
-.cellule-tdai { background-color: #d5f5e3; border-left: 4px solid var(--vert); border-radius: 4px; padding: 6px; }
+.cellule-id {
+    background-color: #d6eaf8;
+    border-left: 4px solid #3498db;
+    border-radius: 4px;
+    padding: 6px;
+}
+
+.cellule-tdia {
+    background-color: #d5f5e3;
+    border-left: 4px solid #27ae60;
+    border-radius: 4px;
+    padding: 6px;
+}

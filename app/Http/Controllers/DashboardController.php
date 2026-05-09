@@ -17,14 +17,14 @@ class DashboardController extends Controller
         $totalSalles = Salle::count();
 
         $etudiantsParProf = Professeur::withCount('etudiants')->get();
-        $maxEtudiants = $etudiantsParProf->max('etudiants_encadres_count');
+        $maxEtudiants = $etudiantsParProf->max('etudiants_count') ?? 1;
 
         $soutenancesParFiliere = Etudiant::selectRaw('filiere, count(*) as total')
             ->groupBy('filiere')
             ->get();
 
         $soutenancesParProf = Professeur::withCount('planningsAsEncadrant')->get();
-        $maxSoutenances = $soutenancesParProf->max('plannings_count');
+        $maxSoutenances = $soutenancesParProf->max('plannings_as_encadrant_count') ?? 1;
 
         return view('dashboard.index', compact(
             'totalEtudiants',

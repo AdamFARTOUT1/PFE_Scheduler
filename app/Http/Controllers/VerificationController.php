@@ -99,16 +99,16 @@ class VerificationController extends Controller
         // Vérification 4 — Équilibre encadrants
         $moyenne = Etudiant::count() > 0 ? Etudiant::count() / Professeur::count() : 0;
 
-        $profs = Professeur::withCount('etudiantsEncadres')->get();
+        $profs = Professeur::withCount('etudiants')->get();
         foreach ($profs as $prof) {
-            if ($prof->etudiants_encadres_count == 0) continue;
+            if ($prof->etudiants_count == 0) continue;
 
-            $ecart = abs($prof->etudiants_encadres_count - $moyenne);
+            $ecart = abs($prof->etudiants_count - $moyenne);
             if ($ecart > 2) {
                 $warnings[] = [
                     'titre' => 'Déséquilibre encadrement',
                     'detail' => $prof->nom . ' ' . $prof->prenom .
-                                ' encadre ' . $prof->etudiants_encadres_count .
+                                ' encadre ' . $prof->etudiants_count .
                                 ' étudiant(s) — moyenne : ' . round($moyenne, 1)
                 ];
             }

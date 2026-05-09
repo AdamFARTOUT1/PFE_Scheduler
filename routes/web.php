@@ -1,19 +1,17 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-<<<<<<< Updated upstream
-use App\Http\Controllers\ImportController;
-Route::get('/import', [ImportController::class, 'index'])->name('import.index');
-Route::post('/import', [ImportController::class, 'store'])->name('import.store');
-=======
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PlanningController;
 use App\Http\Controllers\VerificationController;
+use App\Http\Controllers\ImportController;
 
->>>>>>> Stashed changes
 Route::get('/', function () {
     return redirect('/dashboard');
 });
+
+Route::get('/import', [ImportController::class, 'index'])->name('import.index');
+Route::post('/import', [ImportController::class, 'store'])->name('import.store');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 

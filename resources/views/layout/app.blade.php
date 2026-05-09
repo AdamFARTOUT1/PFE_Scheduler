@@ -10,35 +10,41 @@
 </head>
 <body>
 
-<nav class="navbar navbar-inverse navbar-fixed-top">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#menu">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="{{ url('/dashboard') }}"> PFE Scheduler</a>
-        </div>
-        <div class="collapse navbar-collapse" id="menu">
-            <ul class="nav navbar-nav">
-                <li class="{{ Request::is('dashboard*') ? 'active' : '' }}">
-                    <a href="{{ url('/dashboard') }}"> Dashboard</a>
-                </li>
-                <li class="{{ Request::is('planning*') ? 'active' : '' }}">
-                    <a href="{{ url('/planning') }}"> Planning</a>
-                </li>
-                <li class="{{ Request::is('verification*') ? 'active' : '' }}">
-                    <a href="{{ url('/verification') }}"> Vérification</a>
-                </li>
-                <li class="{{ Request::is('import*') ? 'active' : '' }}">
-                    <a href="{{ url('/import') }}"> Import</a>
-                </li>
-            </ul>
-            <ul class="nav navbar-nav navbar-right">
-                <li><a href="{{ url('/export') }}">⬇ Exporter</a></li>
-            </ul>
-        </div>
+<nav class="navbar-custom">
+    <div class="navbar-inner">
+
+        <a href="{{ url('/dashboard') }}" class="navbar-logo">
+            🎓 PFE Scheduler
+        </a>
+
+        <ul class="navbar-liens">
+            <li>
+                <a href="{{ url('/dashboard') }}" class="{{ Request::is('dashboard*') ? 'actif' : '' }}">
+                    📊 Dashboard
+                </a>
+            </li>
+            <li>
+                <a href="{{ url('/planning') }}" class="{{ Request::is('planning*') ? 'actif' : '' }}">
+                    📅 Planning
+                </a>
+            </li>
+            <li>
+                <a href="{{ url('/import') }}" class="{{ Request::is('import*') ? 'actif' : '' }}">
+                    📂 Import
+                </a>
+            </li>
+            <li>
+                <a href="{{ url('/export') }}" class="{{ Request::is('export*') ? 'actif' : '' }}">
+                    ⬇️ Export
+                </a>
+            </li>
+            <li>
+                <a href="{{ url('/verification') }}" class="{{ Request::is('verification*') ? 'actif' : '' }}">
+                    ✅ Vérification
+                </a>
+            </li>
+        </ul>
+
     </div>
 </nav>
 
@@ -48,7 +54,7 @@
     <div class="container-fluid" style="margin-top:10px">
         <div class="alert alert-success alert-dismissible">
             <button type="button" class="close" data-dismiss="alert">&times;</button>
-             {{ session('success') }}
+            ✅ {{ session('success') }}
         </div>
     </div>
     @endif
@@ -57,7 +63,7 @@
     <div class="container-fluid" style="margin-top:10px">
         <div class="alert alert-danger alert-dismissible">
             <button type="button" class="close" data-dismiss="alert">&times;</button>
-             {{ session('error') }}
+            ❌ {{ session('error') }}
         </div>
     </div>
     @endif
