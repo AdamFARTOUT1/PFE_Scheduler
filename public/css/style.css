@@ -1,0 +1,237 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f8;
+    color: #2c3e50;
+    padding-top: 60px;
+}
+
+/* ---- Navbar ---- */
+.navbar-custom {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 55px;
+    background-color: #2d6abf;
+    border-bottom: 2px solid #1a4f9c;
+}
+
+.navbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    padding: 0 30px;
+}
+
+.navbar-logo {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.navbar-logo:hover {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.navbar-liens {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+.navbar-liens li a {
+    color: #ffffff;
+    text-decoration: none;
+    padding: 8px 18px;
+    display: block;
+    font-size: 14px;
+}
+
+.navbar-liens li a:hover {
+    color: #ffffff;
+    background-color: #1a4f9c;
+    text-decoration: none;
+}
+
+.navbar-liens li a.actif {
+    color: #ffffff;
+    background-color: #1a4f9c;
+    font-weight: bold;
+}
+
+/* ---- Footer ---- */
+.pied-page {
+    background-color: #2d6abf;
+    color: #ffffff;
+    padding: 15px 0;
+    border-top: 2px solid #1a4f9c;
+    font-size: 13px;
+    text-align: center;
+}
+
+.pied-page strong {
+    color: #ffffff;
+}
+
+/* ---- Contenu principal ---- */
+.contenu-principal {
+    min-height: calc(100vh - 110px);
+    padding: 20px 0;
+}
+
+/* ---- Cartes statistiques ---- */
+.carte-stat {
+    background: #ffffff;
+    border-radius: 6px;
+    padding: 25px 20px;
+    text-align: center;
+    border-left: 5px solid #2d6abf;
+    margin-bottom: 20px;
+}
+
+.carte-stat .nombre {
+    font-size: 40px;
+    font-weight: bold;
+    color: #2d6abf;
+}
+
+.carte-stat .label {
+    font-size: 13px;
+    color: #7f8c8d;
+    text-transform: uppercase;
+}
+
+/* ---- Badges filières ---- */
+.badge-id {
+    background-color: #3498db;
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.badge-tdia {
+    background-color: #27ae60;
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* ---- Barres CSS ---- */
+.barre-conteneur {
+    background-color: #ecf0f1;
+    border-radius: 4px;
+    height: 22px;
+    margin: 4px 0;
+    overflow: hidden;
+}
+
+.barre {
+    height: 100%;
+    background-color: #2d6abf;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    padding-left: 8px;
+    min-width: 30px;
+}
+
+.barre.orange {
+    background-color: #f39c12;
+}
+
+.barre.rouge {
+    background-color: #e74c3c;
+}
+
+/* ---- Anomalies vérification ---- */
+.anomalie {
+    border-radius: 6px;
+    padding: 15px 20px;
+    margin-bottom: 12px;
+    border-left: 5px solid;
+}
+
+.anomalie.erreur {
+    background-color: #fdf2f2;
+    border-color: #e74c3c;
+}
+
+.anomalie.warning {
+    background-color: #fef9ec;
+    border-color: #f39c12;
+}
+
+.anomalie.ok {
+    background-color: #eafaf1;
+    border-color: #27ae60;
+}
+
+/* ---- Filtres planning ---- */
+.filtres {
+    background: #ffffff;
+    padding: 15px 20px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+/* ---- Titre de page ---- */
+.titre-page {
+    font-size: 24px;
+    font-weight: bold;
+    color: #1a252f;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+    border-bottom: 3px solid #2d6abf;
+}
+
+/* ---- Bouton générer ---- */
+.btn-generer {
+    background-color: #27ae60;
+    color: #ffffff;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-generer:hover {
+    background-color: #219a52;
+    color: #ffffff;
+}
+
+/* ---- Tableau planning ---- */
+#tableau-planning th {
+    background-color: #2d6abf;
+    color: #ffffff;
+    text-align: center;
+}
+
+#tableau-planning td {
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+.cellule-id {
+    background-color: #d6eaf8;
+    border-left: 4px solid #3498db;
+    border-radius: 4px;
+    padding: 6px;
+}
+
+.cellule-tdia {
+    background-color: #d5f5e3;
+    border-left: 4px solid #27ae60;
+    border-radius: 4px;
+    padding: 6px;
+}
