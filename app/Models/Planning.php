@@ -6,6 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Planning extends Model
 {
+    protected $fillable = [
+        'etudiant_id',
+        'encadrant_id',
+        'jury2_id',
+        'jury3_id',
+        'jury4_id',
+        'salle_id',
+        'creneau_id',
+    ];
     public function etudiant()  { return $this->belongsTo(Etudiant::class); }
     public function encadrant() { return $this->belongsTo(Professeur::class, 'encadrant_id'); }
     public function jury2()     { return $this->belongsTo(Professeur::class, 'jury2_id'); }

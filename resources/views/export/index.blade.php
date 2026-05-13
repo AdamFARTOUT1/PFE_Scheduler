@@ -323,12 +323,13 @@
                         <th>Encadrant</th>
                         <th>Jury 2</th>
                         <th>Jury 3</th>
+                        <th>Jury 4</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($plannings->take(10) as $p)
                     <tr>
-                        <td>{{ $p->creneau->jour ?? '-' }}</td>
+                        <td>{{ $p->creneau->date_pfe ?? '-' }}</td>
                         <td>{{ $p->creneau->heure_debut ?? '-' }} — {{ $p->creneau->heure_fin ?? '-' }}</td>
                         <td>{{ $p->salle->nom ?? '-' }}</td>
                         <td><strong>{{ $p->etudiant->nom ?? '-' }} {{ $p->etudiant->prenom ?? '' }}</strong></td>
@@ -340,6 +341,7 @@
                         <td>{{ $p->encadrant->nom ?? '-' }} {{ $p->encadrant->prenom ?? '' }}</td>
                         <td>{{ $p->jury2->nom ?? '-' }} {{ $p->jury2->prenom ?? '' }}</td>
                         <td>{{ $p->jury3->nom ?? '-' }} {{ $p->jury3->prenom ?? '' }}</td>
+                        <td>{{ $p->jury4->nom ?? '-' }} {{ $p->jury4->prenom ?? '' }}</td>
                     </tr>
                     @endforeach
                 </tbody>

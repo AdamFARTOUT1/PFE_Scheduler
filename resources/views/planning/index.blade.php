@@ -210,8 +210,14 @@
         <!-- Header avec bouton générer -->
         <div class="header-actions">
             <h2 style="margin: 0;">Liste du Planning</h2>
-            <form method="POST" action="{{ url('/planning/generer') }}" style="display:inline;">
+            <form method="POST" action="{{ url('/planning/generer') }}" style="display: flex; align-items: center; gap: 12px;">
                 @csrf
+                <label for="date_debut" style="font-weight: bold; color: #333; white-space: nowrap;">📅 Date de début :</label>
+                <input type="date" name="date_debut" id="date_debut" 
+                       value="{{ old('date_debut', date('Y-m-d')) }}" 
+                       required
+                       style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                <span style="color: #666; font-size: 13px; white-space: nowrap;">(3 jours)</span>
                 <button type="submit" class="btn-generer">⚡ Générer le planning</button>
             </form>
         </div>
@@ -264,16 +270,17 @@
                         <th>Encadrant</th>
                         <th>Jury 2</th>
                         <th>Jury 3</th>
+                        <th>Jury 4</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($plannings as $p)
                     <tr
-                        data-jour="{{ $p->creneau->jour ?? '' }}"
+                        data-jour="{{ $p->creneau->date_pfe ?? '' }}"
                         data-salle="{{ $p->salle->nom ?? '' }}"
                         data-filiere="{{ $p->etudiant->filiere ?? '' }}"
                     >
-                        <td>{{ $p->creneau->jour ?? '-' }}</td>
+                        <td>{{ $p->creneau->date_pfe ?? '-' }}</td>
                         <td>{{ $p->creneau->heure_debut ?? '-' }} — {{ $p->creneau->heure_fin ?? '-' }}</td>
                         <td>{{ $p->salle->nom ?? '-' }}</td>
                         <td><strong>{{ $p->etudiant->nom ?? '-' }} {{ $p->etudiant->prenom ?? '' }}</strong></td>
@@ -285,6 +292,7 @@
                         <td>{{ $p->encadrant->nom ?? '-' }} {{ $p->encadrant->prenom ?? '' }}</td>
                         <td>{{ $p->jury2->nom ?? '-' }} {{ $p->jury2->prenom ?? '' }}</td>
                         <td>{{ $p->jury3->nom ?? '-' }} {{ $p->jury3->prenom ?? '' }}</td>
+                        <td>{{ $p->jury4->nom ?? '-' }} {{ $p->jury4->prenom ?? '' }}</td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -294,7 +302,14 @@
                 <p>📭 Aucun planning généré</p>
                 <form method="POST" action="{{ url('/planning/generer') }}" style="display:inline; margin-top: 20px;">
                     @csrf
-                    <button type="submit" class="btn-create" style="display: inline-block; margin-top: 20px;">⚡ Générer votre premier planning</button>
+                    <div style="margin-bottom: 15px;">
+                        <label for="date_debut_empty" style="font-weight: bold; color: #333;">📅 Date de début :</label>
+                        <input type="date" name="date_debut" id="date_debut_empty" 
+                               value="{{ date('Y-m-d') }}" required
+                               style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; margin-left: 8px;">
+                        <span style="color: #666; font-size: 13px;">(3 jours)</span>
+                    </div>
+                    <button type="submit" class="btn-create" style="display: inline-block; margin-top: 10px;">⚡ Générer votre premier planning</button>
                 </form>
             </div>
         @endif

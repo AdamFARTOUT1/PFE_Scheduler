@@ -40,11 +40,23 @@ class SchedulerService
                 $planning = [];
                 $juryAttributions = [];
 
+                // Calculer le nombre max de soutenances par jour pour répartir sur 3 jours
+                $nbJours = 3;
+                $maxParJour = (int) ceil(count($order) / $nbJours);
+                $compteurParJour = [];
+
                 foreach ($order as $etudiant) {
                     $encadrantId = $encadrants[$etudiant->id];
                     $placed = false;
 
                     foreach ($creneaux as $creneau) {
+                        $dateJour = $creneau['date'];
+
+                        // Vérifier le quota du jour
+                        if (($compteurParJour[$dateJour] ?? 0) >= $maxParJour) {
+                            continue;
+                        }
+
                         $salleLibre = $this->trouverSalleLibre($creneau, $planning, $salles);
                         if ($salleLibre === null) continue;
 
@@ -65,6 +77,7 @@ class SchedulerService
                             $encadrantId,
                             $jury[0],
                             $jury[1],
+                            $jury[2] ?? null,
                             $salleLibre->id,
                             $planning
                         );
@@ -75,12 +88,14 @@ class SchedulerService
                                 'encadrant_id' => $encadrantId,
                                 'jury1_id'     => $jury[0],
                                 'jury2_id'     => $jury[1],
+                                'jury3_id'     => $jury[2] ?? null,
                                 'salle_id'     => $salleLibre->id,
                                 'date'         => $creneau['date'],
                                 'heure_debut'  => $creneau['heure_debut'],
                                 'heure_fin'    => $creneau['heure_fin'],
                             ];
                             $juryAttributions[$etudiant->id] = $jury;
+                            $compteurParJour[$dateJour] = ($compteurParJour[$dateJour] ?? 0) + 1;
                             $placed = true;
                             break;
                         }
@@ -101,43 +116,40 @@ class SchedulerService
         throw new \RuntimeException("Impossible de générer un planning complet.");
     }
 
-private function generateStudentOrders(Collection $etudiants): array
-{
-    // Récupérer l'assignation des encadrants (déjà faite avec EncadrantAssignmentService)
-    $professeurs = \App\Models\Professeur::all();
-    $encadrants = $this->encadrantAssigner->assign($etudiants, $professeurs);
-    
-    // Grouper les étudiants par encadrant
-    $groupes = [];
-    foreach ($etudiants as $etudiant) {
-        $profId = $encadrants[$etudiant->id] ?? 0;
-        $groupes[$profId][] = $etudiant;
-    }
-    
-    // Créer plusieurs ordres en intercalant les groupes
-    $orders = [];
-    for ($i = 0; $i < 50; $i++) {
-        $order = [];
-        $groupesCopy = $groupes;
-        // Mélanger l'ordre des groupes
-        $keys = array_keys($groupesCopy);
-        shuffle($keys);
-        // Tant qu'il reste des étudiants dans les groupes
-        while (true) {
-            $added = false;
-            foreach ($keys as $key) {
-                if (!empty($groupesCopy[$key])) {
-                    $order[] = array_shift($groupesCopy[$key]);
-                    $added = true;
-                }
-            }
-            if (!$added) break;
+    private function generateStudentOrders(Collection $etudiants): array
+    {
+        $professeurs = \App\Models\Professeur::all();
+        $encadrants = $this->encadrantAssigner->assign($etudiants, $professeurs);
+        
+        // Grouper les étudiants par encadrant
+        $groupes = [];
+        foreach ($etudiants as $etudiant) {
+            $profId = $encadrants[$etudiant->id] ?? 0;
+            $groupes[$profId][] = $etudiant;
         }
-        $orders[] = $order;
+        
+        // Créer plusieurs ordres en intercalant les groupes
+        $orders = [];
+        for ($i = 0; $i < 50; $i++) {
+            $order = [];
+            $groupesCopy = $groupes;
+            $keys = array_keys($groupesCopy);
+            shuffle($keys);
+            while (true) {
+                $added = false;
+                foreach ($keys as $key) {
+                    if (!empty($groupesCopy[$key])) {
+                        $order[] = array_shift($groupesCopy[$key]);
+                        $added = true;
+                    }
+                }
+                if (!$added) break;
+            }
+            $orders[] = $order;
+        }
+        
+        return $orders;
     }
-    
-    return $orders;
-}
 
     private function trouverSalleLibre(array $creneau, array $planning, Collection $salles): ?Salle
     {

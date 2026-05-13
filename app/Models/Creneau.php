@@ -6,10 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Creneau extends Model
 {
-    protected $table = 'creneaus';
+    protected $table = 'creneaux';
 
     protected $fillable = [
-        'jour',
+        'date_pfe',
         'heure_debut',
         'heure_fin',
     ];
