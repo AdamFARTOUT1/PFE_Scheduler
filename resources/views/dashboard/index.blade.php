@@ -139,7 +139,7 @@
     <div class="container">
         <div class="nav">
             <a href="{{ route('dashboard.index') }}" class="active">🏠 Tableau de bord</a>
-            <a href="{{ route('salles.index') }}">🏢 Salles</a>
+            <a href="{{ route('export.index') }}">📤 Export</a>
             <a href="{{ route('planning.index') }}">📅 Planning</a>
             <a href="{{ route('verification.index') }}">✓ Vérification</a>
             <a href="{{ route('import.index') }}">📥 Importation</a>
