@@ -180,8 +180,8 @@ class ExcelParserService
         $errors = [];
         \Log::info("saveToDatabase: modèle=$model, lignes totales=$highestRow");
         
-        // Déterminer la ligne de départ (1 si pas d'en-tête, 2 si en-tête)
-        $startRow = 1;
+        // Sauter la première ligne (en-tête)
+        $startRow = 2;
         
         for ($row = $startRow; $row <= $highestRow; $row++) {
             $data = [];
@@ -248,7 +248,7 @@ class ExcelParserService
         $count = 0;
         \Log::info("saveSallesToDatabase: lignes=$highestRow");
         
-        for ($row = 1; $row <= $highestRow; $row++) {
+        for ($row = 2; $row <= $highestRow; $row++) {
             $nom = $sheet->getCell('A' . $row)->getValue();
             $type = $sheet->getCell('B' . $row)->getValue();
             

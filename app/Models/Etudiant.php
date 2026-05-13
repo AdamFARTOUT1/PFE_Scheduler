@@ -14,11 +14,16 @@ class Etudiant extends Model
         'prenom', 
         'filiere', 
         'langue', 
-        'professeur_id'
+        'Encadrant_id'
     ];
     
-    public function professeur()
+    public function encadrant()
     {
-        return $this->belongsTo(Professeur::class, 'professeur_id');
+        return $this->belongsTo(Professeur::class, 'Encadrant_id');
+    }
+
+    public function planning()
+    {
+        return $this->hasOne(Planning::class, 'etudiant_id');
     }
 }

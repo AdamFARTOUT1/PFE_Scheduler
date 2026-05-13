@@ -9,7 +9,7 @@ class Professeur extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nom', 'prenom', 'specialite'];
+    protected $fillable = ['nom', 'prenom', 'specialite','nb_jurys','nb_encadres'];
 
     public function etudiants()
     {
@@ -19,5 +19,20 @@ class Professeur extends Model
     public function planningsAsEncadrant()
     {
         return $this->hasMany(Planning::class, 'encadrant_id');
+    }
+
+    public function planningsJury2()
+    {
+        return $this->hasMany(Planning::class,'jury_2');
+    }
+
+    public function planningsJury3()
+    {
+        return $this->hasMany(Planning::class,'jury_3');
+    }
+
+    public function planningsJury4()
+    {
+        return $this->hasMany(Planning::class,'jury_4');
     }
 }
