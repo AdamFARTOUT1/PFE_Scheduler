@@ -30,46 +30,29 @@ class ImportController extends Controller
 
     public function store(Request $request)
     {
-        $filiere = $request->input('filiere');
-        
-        // Import des professeurs uniquement
-        if ($filiere === 'PROFS_ONLY') {
-            $request->validate([
-                'file_profs' => 'required|mimes:xlsx,xls',
-            ]);
-            try {
-                $this->excelService->importProfesseurs($request->file('file_profs')->getRealPath());
-                return redirect()->back()->with('success', 'Professeurs importés avec succès !');
-            } catch (\Exception $e) {
-                return redirect()->back()->with('error', 'Erreur lors de l\'importation des professeurs : ' . $e->getMessage());
-            }
-        }
-        
-        // Import des étudiants avec filière
+        // Import unifié : un seul fichier avec plusieurs feuilles
         $request->validate([
-            'filiere' => 'required|in:ID,TDIA',
-            'file_etudiants' => 'required|mimes:xlsx,xls',
+            'file_unified' => 'required|mimes:xlsx,xls',
         ]);
+        
         try {
-            $this->excelService->importEtudiantsMultiSheets(
-                $request->file('file_etudiants')->getRealPath(),
-                $filiere
+            $this->excelService->importUnifiedFile(
+                $request->file('file_unified')->getRealPath()
             );
+            
+            // Récupérer les statistiques actuelles
+            $tdia = \App\Models\Etudiant::where('filiere', 'TDIA')->count();
+            $id = \App\Models\Etudiant::where('filiere', 'ID')->count();
+            $total = \App\Models\Etudiant::count();
+            
+            $message = "Importation réussie ! Total: $total étudiants (TDIA: $tdia, ID: $id)";
 
-            $anomalies = $this->excelService->checkConformity();
-
-            if (!empty($anomalies)) {
-                return redirect()->back()->with([
-                    'success' => "Étudiants $filiere importés avec succès.",
-                    'anomalies' => $anomalies
-                ]);
-            }
-
-            return redirect()->back()->with('success', "Importation $filiere réussie et conforme aux règles !");
+            return redirect()->back()->with('success', $message);
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', "Erreur lors de l'importation de la filière $filiere : " . $e->getMessage());
+            return redirect()->back()->with('error', "Erreur lors de l'importation : " . $e->getMessage());
         }
     }
 }
+
 

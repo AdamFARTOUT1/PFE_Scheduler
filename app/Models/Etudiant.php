@@ -19,7 +19,6 @@ class Etudiant extends Model
     
     public function professeur()
     {
-        // On lie l'étudiant au professeur via la colonne 'professeur_id'
         return $this->belongsTo(Professeur::class, 'professeur_id');
     }
 }

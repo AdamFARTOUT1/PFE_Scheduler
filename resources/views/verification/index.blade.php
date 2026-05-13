@@ -1,172 +1,237 @@
-@extends('layout.app')
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vérification des Contraintes</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { 
+            color: #333; 
+            margin-top: 0;
+            text-align: center;
+        }
+        h2 {
+            color: #333;
+            margin-top: 30px;
+            font-size: 18px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .alert-error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .stat-card h3 {
+            margin: 0;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        .stat-card p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .stat-card.success {
+            border-left: 4px solid #4CAF50;
+        }
+        .stat-card.success h3 {
+            color: #4CAF50;
+        }
+        .stat-card.error {
+            border-left: 4px solid #f44336;
+        }
+        .stat-card.error h3 {
+            color: #f44336;
+        }
+        .stat-card.warning {
+            border-left: 4px solid #FF9800;
+        }
+        .stat-card.warning h3 {
+            color: #FF9800;
+        }
+        .issue-item {
+            background-color: #f9f9f9;
+            border-left: 4px solid #f44336;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .issue-item.warning {
+            border-left-color: #FF9800;
+        }
+        .issue-item strong {
+            color: #333;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .issue-item p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .nav {
+            background-color: #333;
+            padding: 0;
+            margin: -30px -30px 30px -30px;
+            border-radius: 8px 8px 0 0;
+        }
+        .nav a {
+            display: inline-block;
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        .nav a:hover, .nav a.active {
+            background-color: #555;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="{{ route('dashboard.index') }}">🏠 Tableau de bord</a>
+            <a href="{{ route('salles.index') }}">🏢 Salles</a>
+            <a href="{{ route('planning.index') }}">📅 Planning</a>
+            <a href="{{ route('verification.index') }}" class="active">✓ Vérification</a>
+            <a href="{{ route('import.index') }}">📥 Importation</a>
+        </div>
 
-@section('titre', 'Dashboard')
+        <h1>✓ Vérification des Contraintes</h1>
 
-@section('contenu')
-<div class="container-fluid" style="padding: 20px 30px;">
+        @if ($message = session('success'))
+            <div class="alert alert-success">
+                <strong>✓ Succès :</strong> {{ $message }}
+            </div>
+        @endif
 
-    <h2 class="titre-page"> Dashboard</h2>
+        @if ($message = session('error'))
+            <div class="alert alert-error">
+                <strong>✗ Erreur :</strong> {{ $message }}
+            </div>
+        @endif
 
-    {{-- 4 cartes chiffres clés --}}
-    <div class="row">
-        <div class="col-md-3">
-            <div class="carte-stat">
-                <div class="nombre">{{ $totalEtudiants }}</div>
-                <div class="label">Étudiants</div>
+        <!-- Statistiques de vérification -->
+        <div class="stats">
+            <div class="stat-card success">
+                <h3>{{ $totalOk }}</h3>
+                <p>Soutenances OK</p>
+            </div>
+            <div class="stat-card error">
+                <h3>{{ count($erreurs) }}</h3>
+                <p>Erreurs</p>
+            </div>
+            <div class="stat-card warning">
+                <h3>{{ count($warnings) }}</h3>
+                <p>Avertissements</p>
+            </div>
+            <div class="stat-card">
+                <h3 style="color: #2196F3;">{{ $plannings->count() }}</h3>
+                <p>Total Soutenances</p>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="carte-stat">
-                <div class="nombre">{{ $totalProfs }}</div>
-                <div class="label">Professeurs</div>
-            </div>
+
+        <!-- Erreurs critiques -->
+        @if(count($erreurs) > 0)
+        <h2>❌ Erreurs Critiques ({{ count($erreurs) }})</h2>
+        <div>
+            @foreach($erreurs as $erreur)
+                <div class="issue-item">
+                    <strong>{{ $erreur['titre'] }}</strong>
+                    <p>{{ $erreur['detail'] }}</p>
+                </div>
+            @endforeach
         </div>
-        <div class="col-md-3">
-            <div class="carte-stat">
-                <div class="nombre">{{ $totalSoutenances }}</div>
-                <div class="label">Soutenances</div>
-            </div>
+        @else
+        <h2>✓ Erreurs Critiques</h2>
+        <div class="alert alert-success">
+            <strong>Excellent !</strong> Aucune erreur critique détectée.
         </div>
-        <div class="col-md-3">
-            <div class="carte-stat">
-                <div class="nombre">{{ $totalSalles }}</div>
-                <div class="label">Salles</div>
-            </div>
+        @endif
+
+        <!-- Avertissements -->
+        @if(count($warnings) > 0)
+        <h2>⚠️ Avertissements ({{ count($warnings) }})</h2>
+        <div>
+            @foreach($warnings as $warning)
+                <div class="issue-item warning">
+                    <strong>{{ $warning['titre'] }}</strong>
+                    <p>{{ $warning['detail'] }}</p>
+                </div>
+            @endforeach
         </div>
+        @else
+        <h2>⚠️ Avertissements</h2>
+        <div class="alert alert-success">
+            <strong>Excellent !</strong> Aucun avertissement.
+        </div>
+        @endif
+
+        <!-- État de vérification global -->
+        <h2>📊 Résumé</h2>
+        @if(count($erreurs) === 0 && count($warnings) === 0)
+            <div class="alert alert-success">
+                <strong>✓ Tous les contrôles sont validés !</strong> Le planning respecte toutes les contraintes.
+            </div>
+        @elseif(count($erreurs) > 0)
+            <div class="alert alert-error">
+                <strong>✗ Attention !</strong> Il y a {{ count($erreurs) }} erreur(s) critique(s) à corriger avant de pouvoir générer les exports.
+            </div>
+        @else
+            <div class="alert alert-warning">
+                <strong>⚠️ Attention !</strong> Il y a {{ count($warnings) }} avertissement(s) à vérifier.
+            </div>
+        @endif
     </div>
-
-    {{-- Soutenances par filière --}}
-    <div class="row" style="margin-top: 30px;">
-        <div class="col-md-4">
-            <div class="panel panel-default">
-                <div class="panel-heading"><strong> Soutenances par filière</strong></div>
-                <div class="panel-body">
-                    @foreach($soutenancesParFiliere as $filiere)
-                    <p>
-                        <span class="badge-{{ strtolower($filiere->filiere) }}">{{ $filiere->filiere }}</span>
-                        <strong style="margin-left: 8px;">{{ $filiere->total }}</strong> étudiants
-                    </p>
-                    <div class="barre-conteneur">
-                        <div class="barre" style="width: {{ ($filiere->total / $totalEtudiants) * 100 }}%">
-                            {{ round(($filiere->total / $totalEtudiants) * 100) }}%
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-
-        {{-- Boutons export --}}
-        <div class="col-md-4">
-            <div class="panel panel-default">
-                <div class="panel-heading"><strong> Exporter</strong></div>
-                <div class="panel-body">
-                    <p style="margin-bottom: 10px;">
-                        <a href="{{ url('/export/affectation/pdf') }}" class="btn btn-danger btn-block">
-                             Affectation — PDF
-                        </a>
-                    </p>
-                    <p style="margin-bottom: 10px;">
-                        <a href="{{ url('/export/affectation/word') }}" class="btn btn-primary btn-block">
-                             Affectation — Word
-                        </a>
-                    </p>
-                    <p style="margin-bottom: 10px;">
-                        <a href="{{ url('/export/planning/pdf') }}" class="btn btn-danger btn-block">
-                             Planning — PDF
-                        </a>
-                    </p>
-                    <p style="margin-bottom: 10px;">
-                        <a href="{{ url('/export/planning/word') }}" class="btn btn-primary btn-block">
-                             Planning — Word
-                        </a>
-                    </p>
-                    <p>
-                        <a href="{{ url('/export/pvs') }}" class="btn btn-success btn-block">
-                             PVs — ZIP
-                        </a>
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        {{-- Liens rapides --}}
-        <div class="col-md-4">
-            <div class="panel panel-default">
-                <div class="panel-heading"><strong>🔗 Accès rapide</strong></div>
-                <div class="panel-body">
-                    <p>
-                        <a href="{{ url('/planning') }}" class="btn btn-default btn-block">
-                             Voir le planning
-                        </a>
-                    </p>
-                    <p>
-                        <a href="{{ url('/verification') }}" class="btn btn-default btn-block">
-                             Vérifier les contraintes
-                        </a>
-                    </p>
-                    <p>
-                        <a href="{{ url('/import') }}" class="btn btn-default btn-block">
-                             Importer Excel
-                        </a>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Étudiants encadrés par prof --}}
-    <div class="row" style="margin-top: 10px;">
-        <div class="col-md-6">
-            <div class="panel panel-default">
-                <div class="panel-heading"><strong> Étudiants encadrés par professeur</strong></div>
-                <div class="panel-body">
-                    @foreach($etudiantsParProf as $prof)
-                    @if($prof->etudiants_count > 0)
-                    <p style="margin-bottom: 4px; font-size: 13px;">
-                        {{ $prof->nom }} {{ $prof->prenom }}
-                        <span class="pull-right"><strong>{{ $prof->etudiants_count }}</strong></span>
-                    </p>
-                    <div class="barre-conteneur">
-                        @php
-                            $pourcent = $maxEtudiants > 0 ? ($prof->etudiants_count / $maxEtudiants) * 100 : 0;
-                            $couleur = $prof->etudiants_count > 4 ? 'rouge' : ($prof->etudiants_count < 3 ? 'orange' : '');
-                        @endphp
-                        <div class="barre {{ $couleur }}" style="width: {{ $pourcent }}%">
-                            {{ $prof->etudiants_count }}
-                        </div>
-                    </div>
-                    @endif
-                    @endforeach
-                </div>
-            </div>
-        </div>
-
-        {{-- Soutenances par prof --}}
-        <div class="col-md-6">
-            <div class="panel panel-default">
-                <div class="panel-heading"><strong> Soutenances par professeur</strong></div>
-                <div class="panel-body">
-                    @foreach($soutenancesParProf as $prof)
-                    @if($prof->plannings_as_encadrant_count > 0)
-                    <p style="margin-bottom: 4px; font-size: 13px;">
-                        {{ $prof->nom }} {{ $prof->prenom }}
-                        <span class="pull-right"><strong>{{ $prof->plannings_as_encadrant_count }}</strong></span>
-                    </p>
-                    <div class="barre-conteneur">
-                        @php
-                            $pourcent = $maxSoutenances > 0 ? ($prof->plannings_as_encadrant_count / $maxSoutenances) * 100 : 0;
-                        @endphp
-                        <div class="barre" style="width: {{ $pourcent }}%">
-                            {{ $prof->plannings_as_encadrant_count }}
-                        </div>
-                    </div>
-                    @endif
-                    @endforeach
-                </div>
-            </div>
-        </div>
-    </div>
-
-</div>
-@endsection
+</body>
+</html>

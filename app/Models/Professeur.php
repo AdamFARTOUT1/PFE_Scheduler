@@ -11,7 +11,6 @@ class Professeur extends Model
 
     protected $fillable = ['nom', 'prenom', 'specialite'];
 
-   
     public function etudiants()
     {
         return $this->hasMany(Etudiant::class, 'professeur_id');

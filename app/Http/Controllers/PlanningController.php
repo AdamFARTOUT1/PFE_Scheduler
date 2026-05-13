@@ -11,7 +11,7 @@ class PlanningController extends Controller
 {
     public function index()
     {
-        $plannings = Planning::with(['etudiant', 'encadrant', 'jury2', 'jury3', 'salle', 'creneau'])
+        $plannings = Planning::with(['etudiant', 'encadrant', 'jury2', 'jury3', 'jury4', 'salle', 'creneau'])
             ->get();
 
         $jours = $plannings->pluck('creneau.jour')->unique()->filter()->values();

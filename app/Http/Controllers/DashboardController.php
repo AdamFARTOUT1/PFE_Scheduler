@@ -16,13 +16,16 @@ class DashboardController extends Controller
         $totalSoutenances = Planning::count();
         $totalSalles = Salle::count();
 
+        // Étudiants par professeur encadrant
         $etudiantsParProf = Professeur::withCount('etudiants')->get();
         $maxEtudiants = $etudiantsParProf->max('etudiants_count') ?? 1;
 
-        $soutenancesParFiliere = Etudiant::selectRaw('filiere, count(*) as total')
+        // Étudiants par filière (pas soutenances qui sont vides)
+        $etudiantsParFiliere = Etudiant::selectRaw('filiere, count(*) as total')
             ->groupBy('filiere')
             ->get();
 
+        // Soutenances par professeur (comme encadrant)
         $soutenancesParProf = Professeur::withCount('planningsAsEncadrant')->get();
         $maxSoutenances = $soutenancesParProf->max('plannings_as_encadrant_count') ?? 1;
 
@@ -33,7 +36,7 @@ class DashboardController extends Controller
             'totalSalles',
             'etudiantsParProf',
             'maxEtudiants',
-            'soutenancesParFiliere',
+            'etudiantsParFiliere',
             'soutenancesParProf',
             'maxSoutenances'
         ));
