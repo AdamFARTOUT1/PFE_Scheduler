@@ -14,6 +14,7 @@ body {
     height: 55px;
     background-color: #2d6abf;
     border-bottom: 2px solid #1a4f9c;
+    z-index: 1000;
 }
 
 .navbar-inner {
@@ -83,7 +84,58 @@ body {
     padding: 20px 0;
 }
 
-/* ---- Cartes statistiques ---- */
+/* ---- Statistiques (grille horizontale) ---- */
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 6px;
+    border-left: 4px solid #2d6abf;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.stat-card h3 {
+    margin: 0;
+    color: #2d6abf;
+    font-size: 28px;
+}
+
+.stat-card p {
+    margin: 5px 0 0 0;
+    color: #7f8c8d;
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+.stat-card.success {
+    border-left-color: #27ae60;
+}
+.stat-card.success h3 {
+    color: #27ae60;
+}
+
+.stat-card.error {
+    border-left-color: #e74c3c;
+}
+.stat-card.error h3 {
+    color: #e74c3c;
+}
+
+.stat-card.warning {
+    border-left-color: #f39c12;
+}
+.stat-card.warning h3 {
+    color: #f39c12;
+}
+
+/* ---- Cartes statistiques (ancien) ---- */
 .carte-stat {
     background: #ffffff;
     border-radius: 6px;
@@ -103,6 +155,16 @@ body {
     font-size: 13px;
     color: #7f8c8d;
     text-transform: uppercase;
+}
+
+/* ---- Header actions (planning) ---- */
+.header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
 /* ---- Badges filières ---- */
@@ -152,6 +214,37 @@ body {
     background-color: #e74c3c;
 }
 
+/* ---- Panels ---- */
+.panel {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.panel h3 {
+    margin-top: 0;
+    color: #333;
+    font-size: 16px;
+    border-bottom: 2px solid #2d6abf;
+    padding-bottom: 10px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
 /* ---- Anomalies vérification ---- */
 .anomalie {
     border-radius: 6px;
@@ -181,6 +274,23 @@ body {
     padding: 15px 20px;
     border-radius: 6px;
     margin-bottom: 20px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filtres label {
+    font-weight: bold;
+    color: #333;
+}
+
+.filtres select {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
 }
 
 /* ---- Titre de page ---- */
@@ -210,7 +320,66 @@ body {
     color: #ffffff;
 }
 
+/* ---- Alertes ---- */
+.alert {
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+}
+
 /* ---- Tableau planning ---- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table thead {
+    border-bottom: 2px solid #ddd;
+}
+
+table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: bold;
+    color: #333;
+    font-size: 13px;
+}
+
+table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+}
+
+table tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
 #tableau-planning th {
     background-color: #2d6abf;
     color: #ffffff;
@@ -220,6 +389,38 @@ body {
 #tableau-planning td {
     font-size: 13px;
     vertical-align: middle;
+}
+
+/* ---- Empty state ---- */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+/* ---- Issue items (vérification) ---- */
+.issue-item {
+    background-color: #f9f9f9;
+    border-left: 4px solid #e74c3c;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.issue-item.warning {
+    border-left-color: #f39c12;
+}
+
+.issue-item strong {
+    color: #333;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.issue-item p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
 }
 
 .cellule-id {

@@ -14,33 +14,33 @@
     <div class="navbar-inner">
 
         <a href="{{ url('/dashboard') }}" class="navbar-logo">
-            🎓 PFE Scheduler
+             PFE Scheduler
         </a>
 
         <ul class="navbar-liens">
             <li>
                 <a href="{{ url('/dashboard') }}" class="{{ Request::is('dashboard*') ? 'actif' : '' }}">
-                    📊 Dashboard
+                     Dashboard
                 </a>
             </li>
             <li>
                 <a href="{{ url('/planning') }}" class="{{ Request::is('planning*') ? 'actif' : '' }}">
-                    📅 Planning
+                    Planning
                 </a>
             </li>
             <li>
                 <a href="{{ url('/import') }}" class="{{ Request::is('import*') ? 'actif' : '' }}">
-                    📂 Import
+                     Import
                 </a>
             </li>
             <li>
                 <a href="{{ url('/export') }}" class="{{ Request::is('export*') ? 'actif' : '' }}">
-                    ⬇️ Export
+                    Export
                 </a>
             </li>
             <li>
                 <a href="{{ url('/verification') }}" class="{{ Request::is('verification*') ? 'actif' : '' }}">
-                    ✅ Vérification
+                     Vérification
                 </a>
             </li>
         </ul>
@@ -54,7 +54,7 @@
     <div class="container-fluid" style="margin-top:10px">
         <div class="alert alert-success alert-dismissible">
             <button type="button" class="close" data-dismiss="alert">&times;</button>
-            ✅ {{ session('success') }}
+             {{ session('success') }}
         </div>
     </div>
     @endif
@@ -63,7 +63,7 @@
     <div class="container-fluid" style="margin-top:10px">
         <div class="alert alert-danger alert-dismissible">
             <button type="button" class="close" data-dismiss="alert">&times;</button>
-            ❌ {{ session('error') }}
+             {{ session('error') }}
         </div>
     </div>
     @endif
@@ -84,4 +84,4 @@
 @yield('scripts')
 
 </body>
-</html>
+</html> 

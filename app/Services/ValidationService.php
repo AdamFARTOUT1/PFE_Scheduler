@@ -62,7 +62,7 @@ class ValidationService
                 }
 
                 $diff = $startA >= $endB ? $startA->diffInMinutes($endB) : $startB->diffInMinutes($endA);
-                if ($diff < 60 && $diff > 0) {
+                if ($diff < 120 && $diff > 0) {
                     $profsA = [$a['encadrant_id'], $a['jury1_id'], $a['jury2_id']];
                     $profsB = [$b['encadrant_id'], $b['jury1_id'], $b['jury2_id']];
                     if (array_intersect($profsA, $profsB)) {

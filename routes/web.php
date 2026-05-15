@@ -21,5 +21,6 @@ Route::post('/planning/generer', [PlanningController::class, 'generer'])->name('
 
 Route::get('/export', [ExportController::class, 'index'])->name('export.index');
 Route::get('/export/download', [ExportController::class, 'download'])->name('export.download');
+Route::get('/export/generate/{doc}/{format}', [ExportController::class, 'generate'])->name('export.generate');
 
 Route::get('/verification', [VerificationController::class, 'index'])->name('verification.index');

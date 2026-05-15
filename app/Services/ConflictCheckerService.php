@@ -30,7 +30,7 @@ class ConflictCheckerService
                 }
             }
 
-            // 2. Un des professeurs est déjà occupé ?
+            // 2. Un des professeurs est en commun ?
             $profsExistants = array_filter([
                 $planning['encadrant_id'],
                 $planning['jury1_id'],
@@ -38,7 +38,8 @@ class ConflictCheckerService
                 $planning['jury3_id'] ?? null,
             ]);
 
-            if (array_intersect($nouveauxProfs, $profsExistants) === []) {
+            $profsCommuns = array_intersect($nouveauxProfs, $profsExistants);
+            if (empty($profsCommuns)) {
                 continue;
             }
 
@@ -49,8 +50,20 @@ class ConflictCheckerService
             $existingStart = Carbon::parse($planning['date'] . ' ' . $planning['heure_debut']);
             $existingEnd   = Carbon::parse($planning['date'] . ' ' . $planning['heure_fin']);
 
-            // Seulement interdire les chevauchements
+            // Interdire les chevauchements
             if ($slotStart < $existingEnd && $slotEnd > $existingStart) {
+                return false;
+            }
+
+            // 3. Imposer 1h de pause obligatoire entre deux soutenances du même prof
+            // Calcul de l'écart entre les deux créneaux
+            if ($slotStart >= $existingEnd) {
+                $gap = $existingEnd->diffInMinutes($slotStart);
+            } else {
+                $gap = $slotEnd->diffInMinutes($existingStart);
+            }
+
+            if ($gap < 60) {
                 return false;
             }
         }

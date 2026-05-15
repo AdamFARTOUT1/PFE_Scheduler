@@ -13,12 +13,16 @@ class PlanningController extends Controller
 {
     public function index()
     {
-        $plannings = Planning::with(['etudiant', 'encadrant', 'jury2', 'jury3', 'jury4', 'salle', 'creneau'])
+        $plannings = Planning::select('plannings.*')
+            ->join('creneaux', 'plannings.creneau_id', '=', 'creneaux.id')
+            ->with(['etudiant', 'encadrant', 'jury2', 'jury3', 'jury4', 'salle', 'creneau'])
+            ->orderBy('creneaux.date_pfe')
+            ->orderBy('creneaux.heure_debut')
             ->get();
 
         $jours = $plannings->pluck('creneau.date_pfe')->unique()->filter()->values();
         $salles = Salle::all();
-        $filieres = ['ID', 'TDAI'];
+        $filieres = ['ID', 'TDIA'];
 
         return view('planning.index', compact('plannings', 'jours', 'salles', 'filieres'));
     }
