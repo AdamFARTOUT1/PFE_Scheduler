@@ -121,4 +121,5 @@ Pour que l'importation fonctionne correctement, le fichier Excel unifié doit ob
 ---
 
 ## 👨‍💻 Contribution
-Développé dans le cadre des projets de gestion interne de l'ENSA Al-Hoceima (Département Mathématiques et Informatique).
+Développé dans le cadre universitaire par Adam FARTOUT,Mohamed BOUHASFOUR, Hiba KHARRATA, Khadija SAYOUKH sous la supervision de Monsieur Mohamed CHERRADI.
+
