@@ -31,6 +31,7 @@ Thumbs.db
 /storage/framework/testing/*
 /storage/framework/views/*
 /storage/app/public/*
+/storage/app/outputs/*
 
 # Project Specific
 pfes.xlsx
