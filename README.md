@@ -1,4 +1,4 @@
-# 🎓 PFE Scheduler - ENSA Al Hoceima
+# PFE Scheduler
 
 **PFE Scheduler** est une application web développée sous Laravel permettant la gestion complète, la planification et l'exportation des soutenances de Projets de Fin d'Études (PFE) pour l'École Nationale des Sciences Appliquées (ENSA) d'Al Hoceima.
 
@@ -6,21 +6,21 @@ L'objectif principal est d'automatiser l'attribution des jurys, la répartition 
 
 ---
 
-## 🚀 Fonctionnalités Principales
+##  Fonctionnalités Principales
 
-### 1. 📥 Importation des données
+### 1.  Importation des données
 * Importation centralisée via un fichier **Excel unifié**.
 * Extraction automatique des listes :
     * **Étudiants** (Nom, Prénom, Filière, Langue de soutenance).
     * **Professeurs** (Nom, Prénom, Spécialité, quotas d'encadrement).
     * **Salles** (Locaux disponibles pour les soutenances).
 
-### 2. 📊 Tableau de Bord (Dashboard)
+### 2.  Tableau de Bord (Dashboard)
 * Vue d'ensemble interactive et visuelle de l'état du système.
 * Statistiques en temps réel (nombre total d'étudiants, professeurs, soutenances, etc.).
 * Répartition graphique des étudiants par filière et charge de soutenance par professeur.
 
-### 3. 🗓️ Génération du Planning
+### 3.  Génération du Planning
 * Algorithme de génération automatique des soutenances.
 * **Assignation intelligente des jurys** : 
   * Attribution d'un président de jury et d'examinateurs.
@@ -29,12 +29,12 @@ L'objectif principal est d'automatiser l'attribution des jurys, la répartition 
 * Planification sur plusieurs jours avec des créneaux horaires fixes.
 * Filtrage dynamique des plannings (par date, filière, professeur ou salle) directement sur l'interface.
 
-### 4. 🔍 Vérification des Contraintes
+### 4.  Vérification des Contraintes
 * Moteur de contrôle pour s'assurer de la validité du planning généré :
   * **Erreurs critiques (Bloquantes)** : Conflits de salles (double réservation au même moment), conflits de professeurs (un prof dans deux jurys en même temps).
   * **Avertissements (Warnings)** : Dépassement de la charge maximale pour un professeur, pauses insuffisantes entre deux soutenances, etc.
 
-### 5. 📤 Exportation Documentaire Automatisée
+### 5.  Exportation Documentaire Automatisée
 Génération de documents officiels au format souhaité :
 * **Planning Global** : Exportation du calendrier complet (Format **PDF** ou **Excel XLSX** générant une feuille par jour).
 * **Affectations** : Liste des étudiants attribués à chaque encadrant (Format **PDF** ou **Word DOCX**).
@@ -42,7 +42,7 @@ Génération de documents officiels au format souhaité :
 
 ---
 
-## 🛠️ Stack Technique
+##  Stack Technique
 
 * **Framework Backend** : Laravel 11 (PHP)
 * **Base de données** : MySQL / SQLite (via Eloquent ORM)
@@ -54,7 +54,7 @@ Génération de documents officiels au format souhaité :
 
 ---
 
-## ⚙️ Installation & Configuration
+##  Installation & Configuration
 
 ### Prérequis
 * PHP >= 8.2
@@ -67,7 +67,7 @@ Génération de documents officiels au format souhaité :
 
 1. **Cloner le dépôt**
    ```bash
-   git clone https://github.com/AdamFARTOUT1/PFE_Scheduler.git
+   git clone https://github.com/MedBhr-source/PFE_Scheduler.git
    cd PFE_Scheduler
    ```
 
@@ -101,7 +101,7 @@ Génération de documents officiels au format souhaité :
 
 ---
 
-## 📂 Format du Fichier d'Importation Excel
+##  Format du Fichier d'Importation Excel
 
 Pour que l'importation fonctionne correctement, le fichier Excel unifié doit obligatoirement contenir **3 feuilles** nommées comme suit :
 
@@ -120,6 +120,6 @@ Pour que l'importation fonctionne correctement, le fichier Excel unifié doit ob
 
 ---
 
-## 👨‍💻 Contribution
-Développé dans le cadre universitaire par Adam FARTOUT,Mohamed BOUHASFOUR, Hiba KHARRATA, Khadija SAYOUKH sous la supervision de Monsieur Mohamed CHERRADI.
+##  Contribution
+Développé par Adam FARTOUT,Mohamed BOUHASFOUR, Hiba KHARRATA, Khadija SAYOUKH sous la supervision de M. Mohamed CHERRADI.
 
