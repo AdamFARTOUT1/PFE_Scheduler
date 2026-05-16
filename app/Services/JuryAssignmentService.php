@@ -46,7 +46,8 @@ class JuryAssignmentService
 
         $jury = [];
 
-        // Si l'étudiant est anglophone, inclure le prof d'anglais en priorité
+        // Si l'étudiant est anglophone, on prépare le prof d'anglais pour l'ajouter en dernier
+        $profAnglaisId = null;
         if (strtolower($etudiant->langue ?? '') === 'en') {
             $profAnglais = $candidats->first(function ($prof) {
                 $specialite = strtolower($prof->specialite ?? '');
@@ -54,20 +55,16 @@ class JuryAssignmentService
             });
 
             if ($profAnglais) {
-                $jury[] = $profAnglais->id;
+                $profAnglaisId = $profAnglais->id;
                 $candidats = $candidats->filter(fn($prof) => $prof->id !== $profAnglais->id);
             }
         }
 
-        // Combien de jurys reste-t-il à trouver ?
-        $remaining = 3 - count($jury);
+        // Combien de jurys reste-t-il à trouver ? (2 si on a un prof d'anglais, sinon 3)
+        $remaining = $profAnglaisId ? 2 : 3;
 
         if ($candidats->count() < $remaining) {
-            // Pas assez pour 3, essayer avec ce qu'on a (minimum 2)
-            $minRequired = max(2 - count($jury), 0);
-            if ($candidats->count() < $minRequired) {
-                throw new \RuntimeException("Pas assez de professeurs disponibles pour l'étudiant {$etudiant->id}");
-            }
+            // Pas assez pour le quota, essayer avec ce qu'on a
             $remaining = $candidats->count();
         }
 
@@ -76,6 +73,11 @@ class JuryAssignmentService
 
         for ($i = 0; $i < $remaining; $i++) {
             $jury[] = $sorted[$i]->id;
+        }
+
+        // Ajouter le prof d'anglais en dernier pour qu'il soit jury4_id (le 4eme)
+        if ($profAnglaisId) {
+            $jury[] = $profAnglaisId;
         }
 
         return $jury;

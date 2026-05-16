@@ -107,7 +107,7 @@
                     data-filiere="{{ $p->etudiant->filiere ?? '' }}"
                 >
                     <td>{{ $p->creneau->date_pfe ?? '-' }}</td>
-                    <td>{{ $p->creneau ? \Carbon\Carbon::parse($p->creneau->heure_debut)->format('H:i') : '-' }} — {{ $p->creneau ? \Carbon\Carbon::parse($p->creneau->heure_fin)->format('H:i') : '-' }}</td>
+                    <td>{{ $p->creneau ? \Carbon\Carbon::parse($p->creneau->heure_debut)->format('H:i') : '-' }} - {{ $p->creneau ? \Carbon\Carbon::parse($p->creneau->heure_fin)->format('H:i') : '-' }}</td>
                     <td>{{ $p->salle->nom ?? '-' }}</td>
                     <td><strong>{{ $p->etudiant->nom ?? '-' }} {{ $p->etudiant->prenom ?? '' }}</strong></td>
                     <td>

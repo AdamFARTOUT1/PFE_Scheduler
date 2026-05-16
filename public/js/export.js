@@ -31,7 +31,7 @@ function selectDoc(doc) {
     carteSelectionnee.style.backgroundColor = '#f0f6ff';
     badgeSelectionne.style.background = '#2d6abf';
     badgeSelectionne.style.color = '#fff';
-    badgeSelectionne.textContent = '✅ Sélectionné';
+    badgeSelectionne.textContent = 'Sélectionné';
 
     // ── Afficher la section format ────────────────────────
     document.getElementById('format-section').style.display = 'block';
@@ -115,6 +115,6 @@ function generer() {
     document.getElementById('btn-generer').disabled = true;
     document.getElementById('btn-generer').textContent = '⏳ Génération...';
 
-    // Rediriger vers la route Laravel
-    window.location.href = BASE_URL + '/export/generate/' + docRoute + '/' + format;
+    // Rediriger vers la route Laravel avec un timestamp pour éviter le cache du navigateur
+    window.location.href = BASE_URL + '/export/generate/' + docRoute + '/' + format + '?t=' + new Date().getTime();
 }

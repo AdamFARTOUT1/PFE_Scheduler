@@ -13,9 +13,9 @@ class Professeur extends Model
 
     public function etudiants()
     {
-        return $this->hasMany(Etudiant::class, 'professeur_id');
+        return $this->hasMany(Etudiant::class, 'professeur_ID');
     }
-    
+
     public function planningsAsEncadrant()
     {
         return $this->hasMany(Planning::class, 'encadrant_id');
@@ -23,16 +23,16 @@ class Professeur extends Model
 
     public function planningsJury2()
     {
-        return $this->hasMany(Planning::class,'jury_2');
+        return $this->hasMany(Planning::class, 'jury2_id');
     }
 
     public function planningsJury3()
     {
-        return $this->hasMany(Planning::class,'jury_3');
+        return $this->hasMany(Planning::class, 'jury3_id');
     }
 
     public function planningsJury4()
     {
-        return $this->hasMany(Planning::class,'jury_4');
+        return $this->hasMany(Planning::class, 'jury4_id');
     }
 }

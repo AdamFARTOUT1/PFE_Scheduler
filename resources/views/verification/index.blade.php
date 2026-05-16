@@ -44,7 +44,7 @@
     </div>
     @else
     <h2 style="font-size: 18px; color: #333; border-bottom: 2px solid #27ae60; padding-bottom: 10px; margin-top: 30px;">
-        ✓ Erreurs Critiques
+         Erreurs Critiques
     </h2>
     <div class="alert alert-success">
         <strong>Excellent !</strong> Aucune erreur critique détectée.
@@ -66,7 +66,7 @@
     </div>
     @else
     <h2 style="font-size: 18px; color: #333; border-bottom: 2px solid #27ae60; padding-bottom: 10px; margin-top: 30px;">
-        ✓ Avertissements
+         Avertissements
     </h2>
     <div class="alert alert-success">
         <strong>Excellent !</strong> Aucun avertissement.
@@ -79,11 +79,11 @@
     </h2>
     @if(count($erreurs) === 0 && count($warnings) === 0)
         <div class="alert alert-success">
-            <strong>✓ Tous les contrôles sont validés !</strong> Le planning respecte toutes les contraintes.
+            <strong> Tous les contrôles sont validés !</strong> Le planning respecte toutes les contraintes.
         </div>
     @elseif(count($erreurs) > 0)
         <div class="alert alert-error">
-            <strong>✗ Attention !</strong> Il y a {{ count($erreurs) }} erreur(s) critique(s) à corriger avant de pouvoir générer les exports.
+            <strong> Attention !</strong> Il y a {{ count($erreurs) }} erreur(s) critique(s) à corriger avant de pouvoir générer les exports.
         </div>
     @else
         <div class="alert alert-warning">

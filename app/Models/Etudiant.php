@@ -14,12 +14,12 @@ class Etudiant extends Model
         'prenom', 
         'filiere', 
         'langue', 
-        'Encadrant_id'
+        'professeur_ID'
     ];
     
     public function encadrant()
     {
-        return $this->belongsTo(Professeur::class, 'Encadrant_id');
+        return $this->belongsTo(Professeur::class, 'professeur_ID');
     }
 
     public function planning()

@@ -13,11 +13,17 @@ class EncadrantAssignmentService
     public function assign(Collection $etudiants, Collection $professeurs, int $maxParProf = 5): array
     {
         $assignment = [];
-        $counts = $professeurs->pluck('id')->mapWithKeys(fn($id) => [$id => 0])->toArray();
+        // Exclure les profs d'anglais de la liste des encadrants
+        $professeursEligibles = $professeurs->filter(function ($prof) {
+            $spec = strtolower(trim($prof->specialite ?? ''));
+            return !str_contains($spec, 'anglais') && !str_contains($spec, 'english');
+        });
+
+        $counts = $professeursEligibles->pluck('id')->mapWithKeys(fn($id) => [$id => 0])->toArray();
 
         // D'abord, utiliser les encadrants déjà fixés en base
         foreach ($etudiants as $etudiant) {
-            if ($etudiant->professeur_ID) {
+            if ($etudiant->professeur_ID && isset($counts[$etudiant->professeur_ID])) {
                 $assignment[$etudiant->id] = $etudiant->professeur_ID;
                 $counts[$etudiant->professeur_ID]++;
             }
@@ -27,14 +33,8 @@ class EncadrantAssignmentService
         foreach ($etudiants as $etudiant) {
             if (isset($assignment[$etudiant->id])) continue;
 
-            $candidats = $professeurs->filter(function ($prof) use ($etudiant, $counts, $maxParProf) {
-                return $counts[$prof->id] < $maxParProf
-                    && $prof->specialite === $this->mapFiliereToSpecialite($etudiant->filiere);
-            });
-
-            if ($candidats->isEmpty()) {
-                $candidats = $professeurs->filter(fn($prof) => $counts[$prof->id] < $maxParProf);
-            }
+            // Attribuer en priorité à ceux qui ont le moins d'étudiants (pour que tout le monde en ait)
+            $candidats = $professeursEligibles->filter(fn($prof) => $counts[$prof->id] < $maxParProf);
 
             if ($candidats->isEmpty()) {
                 throw new \RuntimeException("Aucun professeur disponible pour l'étudiant {$etudiant->id}");
@@ -46,13 +46,5 @@ class EncadrantAssignmentService
         }
 
         return $assignment;
-    }
-
-    private function mapFiliereToSpecialite(string $filiere): string
-    {
-        return match ($filiere) {
-            'TDIA', 'ID' => 'Informatique',
-            default => 'Informatique'
-        };
     }
 }

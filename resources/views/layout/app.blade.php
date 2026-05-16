@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('titre', 'PFE Scheduler')</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ time() }}">
     @yield('styles')
 </head>
 <body>
@@ -74,13 +74,13 @@
 
 <footer class="pied-page">
     <div class="container-fluid text-center">
-        <p>🎓 <strong>PFE Scheduler</strong> — ENSA Al Hoceima | Département MI</p>
+        <p><strong>PFE Scheduler</strong> - ENSA Al Hoceima</p>
     </div>
 </footer>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-<script src="{{ asset('js/script.js') }}"></script>
+<script src="{{ asset('js/script.js') }}?v={{ time() }}"></script>
 @yield('scripts')
 
 </body>

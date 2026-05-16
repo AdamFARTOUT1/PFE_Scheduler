@@ -26,8 +26,14 @@ class PdfExporterService
     // ─────────────────────────────────────────────────────────────────
     public function generateAffectation(): string
     {
-        $professeurs = Professeur::with('etudiants')->orderBy('nom')->get()
-            ->filter(fn($p) => $p->etudiants->count() > 0);
+        $plannings = Planning::with(['etudiant', 'encadrant'])->get();
+        $professeurs = $plannings->groupBy('encadrant_id')->map(function ($items) {
+            $prof = $items->first()->encadrant;
+            if ($prof) {
+                $prof->setRelation('etudiants', $items->map->etudiant);
+            }
+            return $prof;
+        })->filter()->sortBy('nom')->values();
 
         $html = $this->buildAffectationHtml($professeurs);
         return $this->renderToPdf($html, 'affectation.pdf', 'landscape');
@@ -39,7 +45,7 @@ class PdfExporterService
     // ─────────────────────────────────────────────────────────────────
     public function generatePlanning(): string
     {
-        $plannings = Planning::with(['etudiant', 'encadrant', 'jury2', 'jury3', 'creneau', 'salle'])
+        $plannings = Planning::with(['etudiant', 'encadrant', 'jury2', 'jury3', 'jury4','creneau', 'salle'])
             ->join('creneaux', 'plannings.creneau_id', '=', 'creneaux.id')
             ->orderBy('creneaux.date_pfe')
             ->orderBy('creneaux.heure_debut')
@@ -57,7 +63,7 @@ class PdfExporterService
     {
         // Calculer le nombre max d'étudiants par encadrant pour les colonnes
         $maxEtudiants = $professeurs->max(fn($p) => $p->etudiants->count());
-        $maxEtudiants = max($maxEtudiants, 3); // minimum 3 colonnes
+        $maxEtudiants = max($maxEtudiants, 1);//minimum 1 colonne
 
         // En-têtes colonnes étudiants
         $etudiantHeaders = '';
@@ -65,57 +71,48 @@ class PdfExporterService
             $etudiantHeaders .= "<th>Etudiant {$i}</th>";
         }
 
-        // Construire les sections par filière
-        $filieres = ['ID', 'TDIA'];
-        $sections = '';
-
-        foreach ($filieres as $filiere) {
-            // Encadrants qui ont au moins 1 étudiant de cette filière
-            $profsFiliere = $professeurs->filter(
-                fn($p) => $p->etudiants->where('filiere', $filiere)->count() > 0
-            );
-
-            if ($profsFiliere->isEmpty())
-                continue;
-
-            $rows = '';
-            foreach ($profsFiliere as $prof) {
-                $etudiantsFiliere = $prof->etudiants->where('filiere', $filiere)->values();
-                $cols = '';
-                for ($i = 0; $i < $maxEtudiants; $i++) {
-                    if (isset($etudiantsFiliere[$i])) {
-                        $e = $etudiantsFiliere[$i];
-                        $cols .= "<td>" . strtoupper($e->nom) . " " . strtoupper($e->prenom) . "</td>";
-                    } else {
-                        $cols .= "<td class='vide'>—</td>";
-                    }
+        $rows = '';
+        foreach ($professeurs as $prof) {
+            $etudiants = $prof->etudiants->values();
+            $cols = '';
+            for ($i = 0; $i < $maxEtudiants; $i++) {
+                if (isset($etudiants[$i])) {
+                    $e = $etudiants[$i];
+                    $bgColor = ($e->filiere === 'ID') ? '#a4d4f6ff' : '#f8d983ff'; // Bleu pour ID,jaune pour TDIA
+                    $cols .= "<td style='background-color: {$bgColor};'>" . strtoupper($e->nom) . " " . strtoupper($e->prenom) . "</td>";
+                } else {
+                    $cols .= "<td class='vide'>—</td>";
                 }
-                $rows .= "
-                <tr>
-                    <td class='encadrant'>{$prof->nom} {$prof->prenom}</td>
-                    {$cols}
-                </tr>";
             }
-
-            $sections .= "
-            <div class='filiere-section'>
-                <div class='filiere-titre'>Filière {$filiere}</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th rowspan='2' style='vertical-align:middle; width:180px;'>Encadrant</th>
-                            <th colspan='{$maxEtudiants}'>Etudiants encadrés</th>
-                        </tr>
-                        <tr>
-                            {$etudiantHeaders}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {$rows}
-                    </tbody>
-                </table>
-            </div>";
+            $rows .= "
+            <tr>
+                <td class='encadrant'>{$prof->nom} {$prof->prenom}</td>
+                {$cols}
+            </tr>";
         }
+
+        $sections = "
+        <div class='legend' style='margin-bottom: 10px; font-size: 10px;'>
+            <strong>Légende :</strong> 
+            <span style='background-color: #e3f2fd; padding: 3px 6px; border: 1px solid #ccc; margin-left: 5px;'>Filière ID</span>
+            <span style='background-color: #f1f8e9; padding: 3px 6px; border: 1px solid #ccc; margin-left: 10px;'>Filière TDIA</span>
+        </div>
+        <div class='filiere-section'>
+            <table>
+                <thead>
+                    <tr>
+                        <th rowspan='2' style='vertical-align:middle; width:180px;'>Encadrant</th>
+                        <th colspan='{$maxEtudiants}'>Etudiants encadrés</th>
+                    </tr>
+                    <tr>
+                        {$etudiantHeaders}
+                    </tr>
+                </thead>
+                <tbody>
+                    {$rows}
+                </tbody>
+            </table>
+        </div>";
 
         $date = now()->format('d/m/Y');
 
@@ -215,7 +212,7 @@ class PdfExporterService
 
             {$sections}
 
-            <div class="footer">Généré le {$date} — PFE Scheduler ENSA Al-Hoceima</div>
+            <div class="footer">Généré le {$date} - PFE Scheduler ENSA Al-Hoceima</div>
         </body>
         </html>
         HTML;
@@ -229,6 +226,39 @@ class PdfExporterService
         $rows = '';
         $id = 1;
 
+        $profColors = [];
+        $availableProfColors = [
+            '#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff', '#f4c2c2', '#fadadd', '#fdfd96', '#c1e1c1', '#aec6cf',
+            '#ffcba4', '#ffd1dc', '#c8e6c9', '#d1c4e9', '#b3e5fc', '#ffcc80', '#f8bbd0', '#dcedc8', '#b2dfdb', '#ffe082',
+            '#e1bee7', '#c5cae9', '#bcaaa4', '#ffab91', '#ffe0b2', '#f0f4c3', '#e6ee9c', '#ce93d8', '#9fa8da', '#81d4fa',
+            '#80deea', '#80cbc4', '#a5d6a7', '#c5e1a5', '#fff59d', '#ffe082', '#ffcc80', '#ffab91', '#bcaaa4', '#eeeeee'
+        ];
+        $profColorIndex = 0;
+
+        $dayColors = [];
+        $availableDayColors = ['#ffcdd2', '#c8e6c9', '#bbdefb', '#ffe082', '#e1bee7', '#b2dfdb', '#d7ccc8', '#cfd8dc'];
+        $dayColorIndex = 0;
+
+        $getProfColor = function($name) use (&$profColors, &$availableProfColors, &$profColorIndex) {
+            $name = trim($name);
+            if (empty($name)) return '#ffffff';
+            
+            if (!isset($profColors[$name])) {
+                $profColors[$name] = $availableProfColors[$profColorIndex % count($availableProfColors)];
+                $profColorIndex++;
+            }
+            return $profColors[$name];
+        };
+
+        $getDayColor = function($date) use (&$dayColors, &$availableDayColors, &$dayColorIndex) {
+            if (empty($date)) return '#ffffff';
+            if (!isset($dayColors[$date])) {
+                $dayColors[$date] = $availableDayColors[$dayColorIndex % count($availableDayColors)];
+                $dayColorIndex++;
+            }
+            return $dayColors[$date];
+        };
+
         foreach ($plannings as $p) {
             // Format heure : "09:00:00" → "9h"
             $heure = intval(substr($p->creneau->heure_debut, 0, 2)) . 'h';
@@ -236,22 +266,35 @@ class PdfExporterService
             // Format date : "2025-06-23" → "23/06/2025"
             $date = \Carbon\Carbon::parse($p->creneau->date_pfe)->format('d/m/Y');
 
-            $encadrant = e($p->encadrant->nom . ' ' . $p->encadrant->prenom);
-            $jury1 = e($p->jury2->nom . ' ' . $p->jury2->prenom);   // Jury 2 du tableau = membre jury 1
-            $jury2 = e($p->jury3->nom . ' ' . $p->jury3->prenom);   // Jury 3 du tableau = membre jury 2
+            $encadrantStr = $p->encadrant->nom . ' ' . $p->encadrant->prenom;
+            $jury1Str = $p->jury2->nom . ' ' . $p->jury2->prenom;
+            $jury2Str = $p->jury3->nom . ' ' . $p->jury3->prenom;
+            $jury3Str = $p->jury4 ? ($p->jury4->nom . ' ' . $p->jury4->prenom) : '';
+
+            $encadrant = e($encadrantStr);
+            $jury1 = e($jury1Str);   // Jury 2 du tableau = membre jury 1
+            $jury2 = e($jury2Str);   // Jury 3 du tableau = membre jury 2
+            $jury3 = e($jury3Str);   // Jury 4 du tableau = membre jury 3
             $salle = e($p->salle->nom);
             $nom = strtoupper(e($p->etudiant->nom));
             $prenom = strtoupper(e($p->etudiant->prenom));
+
+            $bgEnc = $getProfColor($encadrantStr);
+            $bgJ1 = $getProfColor($jury1Str);
+            $bgJ2 = $getProfColor($jury2Str);
+            $bgJ3 = $jury3Str ? $getProfColor($jury3Str) : '#ffffff';
+            $bgDate = $getDayColor($date);
 
             $bg = ($id % 2 === 0) ? '#f4f6fb' : '#ffffff';
 
             $rows .= "
             <tr style='background:{$bg};'>
                 <td class='center'>{$id}</td>
-                <td>{$encadrant}</td>
-                <td>{$jury1}</td>
-                <td>{$jury2}</td>
-                <td class='center'>{$date}</td>
+                <td style='background-color:{$bgEnc};'>{$encadrant}</td>
+                <td style='background-color:{$bgJ1};'>{$jury1}</td>
+                <td style='background-color:{$bgJ2};'>{$jury2}</td>
+                <td style='background-color:{$bgJ3};'>{$jury3}</td>
+                <td class='center' style='background-color:{$bgDate};'>{$date}</td>
                 <td class='center'>{$heure}</td>
                 <td class='center'>{$salle}</td>
                 <td>{$nom}</td>
@@ -339,6 +382,7 @@ class PdfExporterService
                         <th>Encadrant</th>
                         <th>Membre de jury 1</th>
                         <th>Membre de jury 2</th>
+                        <th>Membre de jury 3</th>
                         <th style="width:65px;">Date</th>
                         <th style="width:35px;">Heure</th>
                         <th style="width:50px;">Salle</th>

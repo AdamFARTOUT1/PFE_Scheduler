@@ -59,7 +59,6 @@
             <div style="margin-bottom: 10px;">
                 <div class="item-row">
                     <span>{{ $prof->nom }} {{ $prof->prenom }}</span>
-                    <strong>{{ $prof->plannings_as_encadrant_count }}</strong>
                 </div>
                 <div class="barre-conteneur">
                     @php

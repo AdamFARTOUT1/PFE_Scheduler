@@ -11,33 +11,33 @@
 
     <!-- Statistiques -->
     <div class="stats">
-        <div class="stat-card" style="border-left-color: #f39c12;">
-            <h3 style="color: #f39c12;">{{ $stats['total_etudiants'] }}</h3>
+        <div class="stat-card">
+            <h3 style="color: #12f32cff;">{{ $stats['total_etudiants'] }}</h3>
             <p>Étudiants</p>
         </div>
-        <div class="stat-card" style="border-left-color: #f39c12;">
-            <h3 style="color: #f39c12;">{{ $stats['total_professeurs'] }}</h3>
+        <div class="stat-card">
+            <h3 style="color: #12f32cff;">{{ $stats['total_professeurs'] }}</h3>
             <p>Professeurs</p>
         </div>
         @foreach ($stats['par_filiere'] as $fil)
-        <div class="stat-card" style="border-left-color: #f39c12;">
-            <h3 style="color: #f39c12;">{{ $fil->total }}</h3>
+        <div class="stat-card">
+            <h3 style="color: #12f32cff;">{{ $fil->total }}</h3>
             <p>{{ $fil->filiere }}</p>
         </div>
         @endforeach
     </div>
 
     <!-- Section d'importation -->
-    <div style="background: #f0f7ff; border: 2px solid #2d6abf; border-radius: 8px; padding: 25px; margin: 25px 0;">
-        <h2 style="color: #1a4f9c; font-size: 18px; margin-top: 0; margin-bottom: 15px;">Importer les Données</h2>
+    <div style="background: #f0f7ff; border: 2px solid #000000ff; border-radius: 8px; padding: 25px; margin: 25px 0;">
+        <h2 style="color: #000000ff; font-size: 18px; margin-top: 0; margin-bottom: 15px;">Importer les Données</h2>
 
-        <div style="background-color: #d6eaf8; border-left: 4px solid #2d6abf; padding: 15px; margin: 15px 0; border-radius: 4px; font-size: 14px;">
-            <strong style="color: #1a4f9c;">Format du fichier Excel requis :</strong><br>
+        <div style="background-color: #ffc8c8ff; padding: 15px; margin: 15px 0; border-radius: 4px; font-size: 14px;">
+            <strong style="color: #ed0000ff;">Format du fichier Excel requis :</strong><br>
             Votre fichier doit contenir exactement 3 feuilles :
             <ul style="margin: 10px 0 0; padding-left: 20px;">
-                <li><strong>Salles</strong> — Colonnes : (A) Nom, (B) Type (Salle/Amphi)</li>
-                <li><strong>Professeurs</strong> — Colonnes : (B) Nom, (C) Prénom, (D) Spécialité</li>
-                <li><strong>Étudiants</strong> — Colonnes : (A) Nom, (B) Prénom, (C) Filière (TDIA/ID), (D) Langue (FR/AN)</li>
+                <li><strong>Salles</strong> - Colonnes : (A) Nom, (B) Type (Salle/Amphi)</li>
+                <li><strong>Professeurs</strong> - Colonnes : (B) Nom, (C) Prénom, (D) Spécialité</li>
+                <li><strong>Étudiants</strong> - Colonnes : (A) Nom, (B) Prénom, (C) Filière (TDIA/ID), (D) Langue (fr/an)</li>
             </ul>
         </div>
 

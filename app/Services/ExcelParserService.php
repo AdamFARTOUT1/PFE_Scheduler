@@ -212,6 +212,16 @@ class ExcelParserService
             if (empty($data['prenom'])) {
                 $data['prenom'] = 'N/A';
             }
+
+            // Normalisation de la langue pour la table etudiants (enum 'fr', 'en')
+            if (isset($data['langue'])) {
+                $lang = strtolower(trim($data['langue']));
+                if ($lang === 'an' || str_contains($lang, 'anglais') || str_contains($lang, 'en')) {
+                    $data['langue'] = 'en';
+                } else {
+                    $data['langue'] = 'fr'; // par défaut
+                }
+            }
             
             try {
                 // Chercher si existe déjà (insensible à la casse et accents)

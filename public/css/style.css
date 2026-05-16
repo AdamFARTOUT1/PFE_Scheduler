@@ -96,7 +96,6 @@ body {
     background-color: #ffffff;
     padding: 20px;
     border-radius: 6px;
-    border-left: 4px solid #2d6abf;
     text-align: center;
     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
@@ -115,21 +114,21 @@ body {
 }
 
 .stat-card.success {
-    border-left-color: #27ae60;
+    /* removed border-left */
 }
 .stat-card.success h3 {
     color: #27ae60;
 }
 
 .stat-card.error {
-    border-left-color: #e74c3c;
+    /* removed border-left */
 }
 .stat-card.error h3 {
     color: #e74c3c;
 }
 
 .stat-card.warning {
-    border-left-color: #f39c12;
+    /* removed border-left */
 }
 .stat-card.warning h3 {
     color: #f39c12;
@@ -141,7 +140,6 @@ body {
     border-radius: 6px;
     padding: 25px 20px;
     text-align: center;
-    border-left: 5px solid #2d6abf;
     margin-bottom: 20px;
 }
 
@@ -250,7 +248,6 @@ body {
     border-radius: 6px;
     padding: 15px 20px;
     margin-bottom: 12px;
-    border-left: 5px solid;
 }
 
 .anomalie.erreur {
@@ -401,14 +398,13 @@ table tbody tr:hover {
 /* ---- Issue items (vérification) ---- */
 .issue-item {
     background-color: #f9f9f9;
-    border-left: 4px solid #e74c3c;
     padding: 12px;
     margin-bottom: 10px;
     border-radius: 4px;
 }
 
 .issue-item.warning {
-    border-left-color: #f39c12;
+    /* removed border-left */
 }
 
 .issue-item strong {
@@ -425,14 +421,12 @@ table tbody tr:hover {
 
 .cellule-id {
     background-color: #d6eaf8;
-    border-left: 4px solid #3498db;
     border-radius: 4px;
     padding: 6px;
 }
 
 .cellule-tdia {
     background-color: #d5f5e3;
-    border-left: 4px solid #27ae60;
     border-radius: 4px;
     padding: 6px;
 }
