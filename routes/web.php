@@ -13,6 +13,7 @@ Route::get('/', function () {
 
 Route::get('/import', [ImportController::class, 'index'])->name('import.index');
 Route::post('/import', [ImportController::class, 'store'])->name('import.store');
+Route::post('/import/reset', [ImportController::class, 'reset'])->name('import.reset');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 

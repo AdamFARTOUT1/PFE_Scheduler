@@ -15,7 +15,7 @@ class ExportController extends Controller
     ) {
     }
 
-    /**
+    /*
      * Route: GET /export/generate/{doc}/{format}
      * doc    : affectation | planning | pvs
      * format : pdf | docx
@@ -34,12 +34,12 @@ class ExportController extends Controller
         if (!in_array($doc, $allowed) || !in_array($format, $formats)) {
             abort(404, 'Document ou format invalide.');
         }
-
+        
         // PVs are always DOCX (zip)
         if ($doc === 'pvs') {
             return $this->wordExporter->generatePVsZip();
         }
-
+        
         $filePath = match (true) {
             $doc === 'affectation' && $format === 'pdf' => $this->pdfExporter->generateAffectation(),
             $doc === 'affectation' && $format === 'docx' => $this->wordExporter->generateAffectation(),
@@ -61,7 +61,7 @@ class ExportController extends Controller
             'planning' => 'Planning_Soutenances',
         ];
 
-        $filename = $labels[$doc] . '_' . now()->format('Ymd_His') . '.' . $format;
+        $filename = $labels[$doc] . '_' . now()->format('Ymd_His') . '.' . $format; //YmdHis
 
         return response()->download($filePath, $filename, [
             'Content-Type' => $mimeTypes[$format],

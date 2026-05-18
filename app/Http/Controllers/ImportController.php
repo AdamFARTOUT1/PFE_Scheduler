@@ -7,6 +7,7 @@ use App\Services\ExcelParserService;
 use App\Models\Professeur;
 use App\Models\Etudiant;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class ImportController extends Controller
 {
@@ -51,6 +52,25 @@ class ImportController extends Controller
 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', "Erreur lors de l'importation : " . $e->getMessage());
+        }
+    }
+
+    public function reset()
+    {
+        try {
+            Schema::disableForeignKeyConstraints();
+
+            DB::table('plannings')->truncate();
+            DB::table('etudiants')->truncate();
+            DB::table('professeurs')->truncate();
+            DB::table('salles')->truncate();
+            DB::table('creneaux')->truncate();
+
+            Schema::enableForeignKeyConstraints();
+
+            return redirect()->back()->with('success', 'La base de données a été réinitialisée avec succès.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erreur lors de la réinitialisation : ' . $e->getMessage());
         }
     }
 }

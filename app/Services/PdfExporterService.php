@@ -94,8 +94,8 @@ class PdfExporterService
         $sections = "
         <div class='legend' style='margin-bottom: 10px; font-size: 10px;'>
             <strong>Légende :</strong> 
-            <span style='background-color: #e3f2fd; padding: 3px 6px; border: 1px solid #ccc; margin-left: 5px;'>Filière ID</span>
-            <span style='background-color: #f1f8e9; padding: 3px 6px; border: 1px solid #ccc; margin-left: 10px;'>Filière TDIA</span>
+            <span style='background-color: #a4d4f6ff; padding: 3px 6px; border: 1px solid #ccc; margin-left: 5px;'>Filière ID</span>
+            <span style='background-color: #f8d983ff; padding: 3px 6px; border: 1px solid #ccc; margin-left: 10px;'>Filière TDIA</span>
         </div>
         <div class='filiere-section'>
             <table>
@@ -135,12 +135,12 @@ class PdfExporterService
                     padding-bottom: 10px;
                 }
                 .header .logo-line {
-                    font-size: 13px;
+                    font-size: 16px;
                     font-weight: bold;
                     color: #003580;
                 }
                 .header .dept {
-                    font-size: 11px;
+                    font-size: 12px;
                     color: #333;
                 }
                 .header .titre {
@@ -155,7 +155,7 @@ class PdfExporterService
                 }
                 .filiere-section {
                     margin-bottom: 24px;
-                    page-break-inside: avoid;
+                    page-break-inside: auto !important;
                 }
                 .filiere-titre {
                     background: #003580;
@@ -169,10 +169,10 @@ class PdfExporterService
                 table {
                     width: 100%;
                     border-collapse: collapse;
-                    border: 1px solid #bbb;
+                    border: 1px solid #dcd9d9ff;
                 }
                 thead th {
-                    background: #d0d8e8;
+                    background: #f3f5faff;
                     color: #111;
                     font-weight: bold;
                     font-size: 9px;
@@ -183,19 +183,19 @@ class PdfExporterService
                 tbody tr:nth-child(even) { background: #f4f6fb; }
                 td {
                     padding: 5px 6px;
-                    border: 1px solid #ccc;
+                    border: 1px solid #525252ff;
                     vertical-align: middle;
                 }
                 td.encadrant {
                     font-weight: bold;
-                    background: #eef2ff;
+                    background: #fafbffff;
                     white-space: nowrap;
                 }
                 td.vide { color: #bbb; text-align: center; }
                 .footer {
                     text-align: right;
                     font-size: 8px;
-                    color: #999;
+                    color: #000000ff;
                     margin-top: 12px;
                     border-top: 1px solid #ddd;
                     padding-top: 4px;
@@ -212,7 +212,7 @@ class PdfExporterService
 
             {$sections}
 
-            <div class="footer">Généré le {$date} - PFE Scheduler ENSA Al-Hoceima</div>
+            <div class="footer">Généré le {$date} </div>
         </body>
         </html>
         HTML;

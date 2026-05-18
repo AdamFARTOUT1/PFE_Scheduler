@@ -49,7 +49,7 @@ function selectDoc(doc) {
 
         // Activer le bouton directement
         btn.disabled = false;
-        btn.textContent = '⬇ Générer & Télécharger ZIP';
+        btn.textContent = ' Générer & Télécharger ZIP';
 
     } else {
         // Affectation ou Planning → montrer le choix PDF/DOCX
@@ -63,7 +63,7 @@ function selectDoc(doc) {
         // Désactiver le bouton jusqu'au choix du format
         btn.disabled = true;
         btn.style.opacity = '0.6';
-        btn.textContent = '⬇ Générer & Télécharger';
+        btn.textContent = ' Générer & Télécharger';
     }
 
     // Scroller vers la section format
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Adapter le texte du bouton selon le format
             var format = this.value.toUpperCase();
-            btn.textContent = '⬇ Générer & Télécharger ' + format;
+            btn.textContent = ' Générer & Télécharger ' + format;
         });
     });
 });
@@ -113,7 +113,7 @@ function generer() {
     // Afficher le spinner
     document.getElementById('spinner').style.display = 'block';
     document.getElementById('btn-generer').disabled = true;
-    document.getElementById('btn-generer').textContent = '⏳ Génération...';
+    document.getElementById('btn-generer').textContent = ' Génération...';
 
     // Rediriger vers la route Laravel avec un timestamp pour éviter le cache du navigateur
     window.location.href = BASE_URL + '/export/generate/' + docRoute + '/' + format + '?t=' + new Date().getTime();

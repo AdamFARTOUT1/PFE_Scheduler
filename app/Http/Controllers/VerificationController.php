@@ -15,7 +15,7 @@ class VerificationController extends Controller
 
         $plannings = Planning::with(['etudiant', 'encadrant', 'jury2', 'jury3','jury4', 'salle', 'creneau'])->get();
 
-        // Vérification 1 — Chevauchement de salles
+        // Vérification 1 - Chevauchement de salles
         foreach ($plannings as $p1) {
             foreach ($plannings as $p2) {
                 if ($p1->id >= $p2->id) continue;
@@ -35,7 +35,7 @@ class VerificationController extends Controller
             }
         }
 
-        // Vérification 2 — Prof dans 2 soutenances en même temps
+        // Vérification 2 - Prof dans 2 soutenances en meme temps
         foreach ($plannings as $p1) {
             foreach ($plannings as $p2) {
                 if ($p1->id >= $p2->id) continue;
@@ -60,7 +60,7 @@ class VerificationController extends Controller
             }
         }
 
-        // Vérification 3 — Moins d'1h de repos entre 2 soutenances du même prof
+        // Vérification 3 - moins de 1h de repos entre 2 soutenances du même prof
         foreach ($plannings as $p1) {
             foreach ($plannings as $p2) {
                 if ($p1->id >= $p2->id) continue;
@@ -96,7 +96,7 @@ class VerificationController extends Controller
             }
         }
 
-        // Vérification 4 — Équilibre encadrants
+        // Vérification 4 - Équilibre encadrants
         $moyenne = Etudiant::count() > 0 ? Etudiant::count() / Professeur::count() : 0;
 
         $profs = Professeur::withCount('etudiants')->get();

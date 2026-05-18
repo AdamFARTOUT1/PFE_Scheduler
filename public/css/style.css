@@ -12,8 +12,8 @@ body {
     left: 0;
     right: 0;
     height: 55px;
-    background-color: #2d6abf;
-    border-bottom: 2px solid #1a4f9c;
+    background-color: #1F1FFF;
+    border-bottom: 2px solid #ffffff;
     z-index: 1000;
 }
 
@@ -27,7 +27,7 @@ body {
 
 .navbar-logo {
     color: #ffffff;
-    font-size: 18px;
+    font-size: 26px;
     font-weight: bold;
     text-decoration: none;
 }
@@ -42,6 +42,10 @@ body {
     margin: 0;
     padding: 0;
     display: flex;
+    gap: 20px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .navbar-liens li a {
@@ -53,14 +57,14 @@ body {
 }
 
 .navbar-liens li a:hover {
-    color: #ffffff;
-    background-color: #1a4f9c;
+    color: #000000;
+    background-color: #ffffff;
     text-decoration: none;
 }
 
 .navbar-liens li a.actif {
-    color: #ffffff;
-    background-color: #1a4f9c;
+    color: #000000;
+    background-color: #ffffff;
     font-weight: bold;
 }
 
@@ -97,12 +101,12 @@ body {
     padding: 20px;
     border-radius: 6px;
     text-align: center;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .stat-card h3 {
     margin: 0;
-    color: #2d6abf;
+    color: #1F1FFF;
     font-size: 28px;
 }
 
@@ -113,23 +117,16 @@ body {
     text-transform: uppercase;
 }
 
-.stat-card.success {
-    /* removed border-left */
-}
+
 .stat-card.success h3 {
     color: #27ae60;
 }
 
-.stat-card.error {
-    /* removed border-left */
-}
 .stat-card.error h3 {
     color: #e74c3c;
 }
 
-.stat-card.warning {
-    /* removed border-left */
-}
+
 .stat-card.warning h3 {
     color: #f39c12;
 }
@@ -195,7 +192,7 @@ body {
 
 .barre {
     height: 100%;
-    background-color: #2d6abf;
+    background-color: #1F1FFF;
     border-radius: 4px;
     color: #fff;
     font-size: 12px;
@@ -218,7 +215,7 @@ body {
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .panel h3 {
@@ -301,6 +298,10 @@ body {
 }
 
 /* ---- Bouton générer ---- */
+.btn-reset:hover {
+    background-color: #c0392b !important;
+}
+
 .btn-generer {
     background-color: #27ae60;
     color: #ffffff;
@@ -403,9 +404,6 @@ table tbody tr:hover {
     border-radius: 4px;
 }
 
-.issue-item.warning {
-    /* removed border-left */
-}
 
 .issue-item strong {
     color: #333;
