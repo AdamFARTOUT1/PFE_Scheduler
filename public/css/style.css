@@ -12,7 +12,7 @@ body {
     left: 0;
     right: 0;
     height: 55px;
-    background-color: #1F1FFF;
+    background-color: #0a0a6c;
     border-bottom: 2px solid #ffffff;
     z-index: 1000;
 }
@@ -106,7 +106,7 @@ body {
 
 .stat-card h3 {
     margin: 0;
-    color: #1F1FFF;
+    color: #010155;
     font-size: 28px;
 }
 
@@ -192,7 +192,7 @@ body {
 
 .barre {
     height: 100%;
-    background-color: #1F1FFF;
+    background-color: #040474;
     border-radius: 4px;
     color: #fff;
     font-size: 12px;

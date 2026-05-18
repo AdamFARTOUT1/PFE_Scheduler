@@ -68,7 +68,7 @@
                 @csrf
                 <button type="submit" class="btn-reset"
                     style="background-color: #e74c3c; color: white; border: none; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.3s;">
-                d    Réinitialiser la Base de Données
+                    Réinitialiser la Base de Données
                 </button>
             </form>
         </div>
