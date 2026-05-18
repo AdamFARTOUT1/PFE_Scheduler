@@ -30,9 +30,4 @@ class Professeur extends Model
     {
         return $this->hasMany(Planning::class, 'jury3_id');
     }
-
-    public function planningsJury4()
-    {
-        return $this->hasMany(Planning::class, 'jury4_id');
-    }
 }

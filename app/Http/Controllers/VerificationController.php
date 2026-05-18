@@ -13,7 +13,7 @@ class VerificationController extends Controller
         $erreurs = [];
         $warnings = [];
 
-        $plannings = Planning::with(['etudiant', 'encadrant', 'jury2', 'jury3','jury4', 'salle', 'creneau'])->get();
+        $plannings = Planning::with(['etudiant', 'encadrant', 'jury2', 'jury3', 'salle', 'creneau'])->get();
 
         // Vérification 1 - Chevauchement de salles
         foreach ($plannings as $p1) {
@@ -41,8 +41,8 @@ class VerificationController extends Controller
                 if ($p1->id >= $p2->id) continue;
                 if ($p1->creneau_id != $p2->creneau_id) continue;
 
-                $profs1 = [$p1->encadrant_id, $p1->jury2_id, $p1->jury3_id, $p1->jury4_id];
-                $profs2 = [$p2->encadrant_id, $p2->jury2_id, $p2->jury3_id, $p2->jury4_id];
+                $profs1 = [$p1->encadrant_id, $p1->jury2_id, $p1->jury3_id];
+                $profs2 = [$p2->encadrant_id, $p2->jury2_id, $p2->jury3_id];
 
                 $conflit = array_intersect($profs1, $profs2);
                 $conflit = array_filter($conflit);
@@ -66,8 +66,8 @@ class VerificationController extends Controller
                 if ($p1->id >= $p2->id) continue;
                 if (!$p1->creneau || !$p2->creneau) continue;
 
-                $profs1 = [$p1->encadrant_id, $p1->jury2_id, $p1->jury3_id, $p1->jury4_id];
-                $profs2 = [$p2->encadrant_id, $p2->jury2_id, $p2->jury3_id, $p2->jury4_id];
+                $profs1 = [$p1->encadrant_id, $p1->jury2_id, $p1->jury3_id];
+                $profs2 = [$p2->encadrant_id, $p2->jury2_id, $p2->jury3_id];
 
                 $commun = array_filter(array_intersect($profs1, $profs2));
                 if (empty($commun)) continue;

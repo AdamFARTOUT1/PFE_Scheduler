@@ -15,7 +15,7 @@ class PlanningController extends Controller
     {
         $plannings = Planning::select('plannings.*')
             ->join('creneaux', 'plannings.creneau_id', '=', 'creneaux.id')
-            ->with(['etudiant', 'encadrant', 'jury2', 'jury3', 'jury4', 'salle', 'creneau'])
+            ->with(['etudiant', 'encadrant', 'jury2', 'jury3', 'salle', 'creneau'])
             ->orderBy('creneaux.date_pfe')
             ->orderBy('creneaux.heure_debut')
             ->get();
@@ -65,7 +65,6 @@ class PlanningController extends Controller
                     'encadrant_id' => $item['encadrant_id'],
                     'jury2_id'     => $item['jury1_id'],
                     'jury3_id'     => $item['jury2_id'],
-                    'jury4_id'     => $item['jury3_id'] ?? null,
                     'salle_id'     => $item['salle_id'],
                     'creneau_id'   => $creneau->id,
                 ]);

@@ -9,9 +9,6 @@ use Carbon\Carbon;
 class JuryAssignmentService
 {
     /**
-     * Assigne 3 jurys pour un étudiant :
-     * - Filtre les profs disponibles dans le créneau (pas de conflit horaire / 1h de pause)
-     * - Si langue = 'en', le prof d'anglais est automatiquement inclus comme jury
      * - Les jurys restants sont choisis parmi les profs les moins chargés
      * - L'encadrant ne peut pas être jury
      */
@@ -41,7 +38,6 @@ class JuryAssignmentService
         foreach ($existingJurys as $jury) {
             if (isset($jury[0])) $charge[$jury[0]] = ($charge[$jury[0]] ?? 0) + 1;
             if (isset($jury[1])) $charge[$jury[1]] = ($charge[$jury[1]] ?? 0) + 1;
-            if (isset($jury[2])) $charge[$jury[2]] = ($charge[$jury[2]] ?? 0) + 1;
         }
 
         $jury = [];
@@ -60,8 +56,8 @@ class JuryAssignmentService
             }
         }
 
-        // Combien de jurys reste-t-il à trouver ? (2 si on a un prof d'anglais, sinon 3)
-        $remaining = $profAnglaisId ? 2 : 3;
+        // Combien de jurys reste-t-il à trouver ? (1 si on a un prof d'anglais, sinon 2)
+        $remaining = $profAnglaisId ? 1 : 2;
 
         if ($candidats->count() < $remaining) {
             // Pas assez pour le quota, essayer avec ce qu'on a
@@ -75,7 +71,7 @@ class JuryAssignmentService
             $jury[] = $sorted[$i]->id;
         }
 
-        // Ajouter le prof d'anglais en dernier pour qu'il soit jury4_id (le 4eme)
+        // Ajouter le prof d'anglais en dernier
         if ($profAnglaisId) {
             $jury[] = $profAnglaisId;
         }
@@ -99,7 +95,6 @@ class JuryAssignmentService
                 $p['encadrant_id'],
                 $p['jury1_id'],
                 $p['jury2_id'],
-                $p['jury3_id'] ?? null,
             ]);
 
             if (!in_array($profId, $profsInPlanning)) continue;

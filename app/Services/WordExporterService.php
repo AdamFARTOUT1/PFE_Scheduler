@@ -130,7 +130,7 @@ class WordExporterService
             'marginRight' => 700,
         ]);
 
-        $plannings = Planning::with(['etudiant', 'encadrant', 'jury2', 'jury3', 'jury4', 'creneau', 'salle'])
+        $plannings = Planning::with(['etudiant', 'encadrant', 'jury2', 'jury3', 'creneau', 'salle'])
             ->join('creneaux', 'plannings.creneau_id', '=', 'creneaux.id')
             ->orderBy('creneaux.date_pfe')
             ->orderBy('creneaux.heure_debut')
@@ -144,8 +144,8 @@ class WordExporterService
         $phpWord->addTableStyle('PlanTable', ['borderSize' => 4, 'borderColor' => 'AAAAAA', 'cellMargin' => 50]);
         $table = $section->addTable('PlanTable');
 
-        $headers = ['ID', 'Encadrant', 'Jury 1', 'Jury 2', 'Jury 3', 'Date', 'Heure', 'Salle', "Nom d'étudiant", "Prénom d'étudiant"];
-        $widths = [365, 1600, 1600, 1600, 1600, 850, 450, 600, 1500, 1550];
+        $headers = ['ID', 'Encadrant', 'Jury 1', 'Jury 2', 'Date', 'Heure', 'Salle', "Nom d'étudiant", "Prénom d'étudiant"];
+        $widths = [365, 1600, 1600, 1600, 850, 450, 600, 1500, 1550];
 
         $table->addRow(450);
         foreach ($headers as $i => $h) {
@@ -233,12 +233,10 @@ class WordExporterService
             $encadrantStr = $p->encadrant->nom . ' ' . $p->encadrant->prenom;
             $jury1Str = $p->jury2->nom . ' ' . $p->jury2->prenom;
             $jury2Str = $p->jury3->nom . ' ' . $p->jury3->prenom;
-            $jury3Str = $p->jury4 ? ($p->jury4->nom . ' ' . $p->jury4->prenom) : '';
 
             $bgEnc = $getProfColor($encadrantStr);
             $bgJ1 = $getProfColor($jury1Str);
             $bgJ2 = $getProfColor($jury2Str);
-            $bgJ3 = $jury3Str ? $getProfColor($jury3Str) : self::BLANC;
             $bgDate = $getDayColor($date);
 
             $bg = ($id % 2 === 0) ? self::BLEU_LIGHT : self::BLANC;
@@ -249,12 +247,11 @@ class WordExporterService
             $table->addCell($widths[1], ['bgColor' => $bgEnc])->addText($encadrantStr, $ts);
             $table->addCell($widths[2], ['bgColor' => $bgJ1])->addText($jury1Str, $ts);
             $table->addCell($widths[3], ['bgColor' => $bgJ2])->addText($jury2Str, $ts);
-            $table->addCell($widths[4], ['bgColor' => $bgJ3])->addText($jury3Str, $ts);
-            $table->addCell($widths[5], ['bgColor' => $bgDate])->addText($date, $ts, ['alignment' => Jc::CENTER]);
-            $table->addCell($widths[6], ['bgColor' => $bg])->addText($heure, $ts, ['alignment' => Jc::CENTER]);
-            $table->addCell($widths[7], ['bgColor' => $bg])->addText($p->salle->nom, $ts, ['alignment' => Jc::CENTER]);
-            $table->addCell($widths[8], ['bgColor' => $bg])->addText(strtoupper($p->etudiant->nom), $ts);
-            $table->addCell($widths[9], ['bgColor' => $bg])->addText(strtoupper($p->etudiant->prenom), $ts);
+            $table->addCell($widths[4], ['bgColor' => $bgDate])->addText($date, $ts, ['alignment' => Jc::CENTER]);
+            $table->addCell($widths[5], ['bgColor' => $bg])->addText($heure, $ts, ['alignment' => Jc::CENTER]);
+            $table->addCell($widths[6], ['bgColor' => $bg])->addText($p->salle->nom, $ts, ['alignment' => Jc::CENTER]);
+            $table->addCell($widths[7], ['bgColor' => $bg])->addText(strtoupper($p->etudiant->nom), $ts);
+            $table->addCell($widths[8], ['bgColor' => $bg])->addText(strtoupper($p->etudiant->prenom), $ts);
             $id++;
         }
 
@@ -269,7 +266,7 @@ class WordExporterService
     // ═══════════════════════════════════════════════════════════════
     public function generatePVsZip(): \Symfony\Component\HttpFoundation\BinaryFileResponse
     {
-        $plannings = Planning::with(['etudiant', 'encadrant', 'jury2', 'jury3', 'jury4', 'creneau', 'salle'])
+        $plannings = Planning::with(['etudiant', 'encadrant', 'jury2', 'jury3', 'creneau', 'salle'])
             ->join('creneaux', 'plannings.creneau_id', '=', 'creneaux.id')
             ->orderBy('creneaux.date_pfe')
             ->orderBy('creneaux.heure_debut')
@@ -408,7 +405,6 @@ class WordExporterService
         $membres = array_filter([
             ['prof' => $planning->jury2, 'role' => 'Président'],
             ['prof' => $planning->jury3, 'role' => 'Rapporteur'],
-            $planning->jury4 ? ['prof' => $planning->jury4, 'role' => 'Rapporteur'] : null,
         ]);
 
         foreach ($membres as $m) {
@@ -477,7 +473,7 @@ class WordExporterService
 
         $section->addText('Signature des membres du jury :', $normal);
         //les nom des membres du jury dans meme ligne avec underscore
-        $nomMembres = '';
+        $nomMembres = 'Pr. ' . $enc->nom . ' ' . $enc->prenom . '          ';
         foreach ($membres as $m) {
             $nomMembres .= 'Pr. ' . $m['prof']->nom . ' ' . $m['prof']->prenom . '          ';
         }

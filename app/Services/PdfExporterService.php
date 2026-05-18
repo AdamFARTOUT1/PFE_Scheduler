@@ -45,7 +45,7 @@ class PdfExporterService
     // ─────────────────────────────────────────────────────────────────
     public function generatePlanning(): string
     {
-        $plannings = Planning::with(['etudiant', 'encadrant', 'jury2', 'jury3', 'jury4','creneau', 'salle'])
+        $plannings = Planning::with(['etudiant', 'encadrant', 'jury2', 'jury3', 'creneau', 'salle'])
             ->join('creneaux', 'plannings.creneau_id', '=', 'creneaux.id')
             ->orderBy('creneaux.date_pfe')
             ->orderBy('creneaux.heure_debut')
@@ -269,12 +269,10 @@ class PdfExporterService
             $encadrantStr = $p->encadrant->nom . ' ' . $p->encadrant->prenom;
             $jury1Str = $p->jury2->nom . ' ' . $p->jury2->prenom;
             $jury2Str = $p->jury3->nom . ' ' . $p->jury3->prenom;
-            $jury3Str = $p->jury4 ? ($p->jury4->nom . ' ' . $p->jury4->prenom) : '';
 
             $encadrant = e($encadrantStr);
             $jury1 = e($jury1Str);   // Jury 2 du tableau = membre jury 1
             $jury2 = e($jury2Str);   // Jury 3 du tableau = membre jury 2
-            $jury3 = e($jury3Str);   // Jury 4 du tableau = membre jury 3
             $salle = e($p->salle->nom);
             $nom = strtoupper(e($p->etudiant->nom));
             $prenom = strtoupper(e($p->etudiant->prenom));
@@ -282,7 +280,6 @@ class PdfExporterService
             $bgEnc = $getProfColor($encadrantStr);
             $bgJ1 = $getProfColor($jury1Str);
             $bgJ2 = $getProfColor($jury2Str);
-            $bgJ3 = $jury3Str ? $getProfColor($jury3Str) : '#ffffff';
             $bgDate = $getDayColor($date);
 
             $bg = ($id % 2 === 0) ? '#f4f6fb' : '#ffffff';
@@ -293,7 +290,6 @@ class PdfExporterService
                 <td style='background-color:{$bgEnc};'>{$encadrant}</td>
                 <td style='background-color:{$bgJ1};'>{$jury1}</td>
                 <td style='background-color:{$bgJ2};'>{$jury2}</td>
-                <td style='background-color:{$bgJ3};'>{$jury3}</td>
                 <td class='center' style='background-color:{$bgDate};'>{$date}</td>
                 <td class='center'>{$heure}</td>
                 <td class='center'>{$salle}</td>
@@ -382,7 +378,6 @@ class PdfExporterService
                         <th>Encadrant</th>
                         <th>Membre de jury 1</th>
                         <th>Membre de jury 2</th>
-                        <th>Membre de jury 3</th>
                         <th style="width:65px;">Date</th>
                         <th style="width:35px;">Heure</th>
                         <th style="width:50px;">Salle</th>

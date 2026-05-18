@@ -96,7 +96,6 @@
                     <th>Encadrant</th>
                     <th>Jury 2</th>
                     <th>Jury 3</th>
-                    <th>Jury 4</th>
                 </tr>
             </thead>
             <tbody>
@@ -118,7 +117,6 @@
                     <td>{{ $p->encadrant->nom ?? '-' }} {{ $p->encadrant->prenom ?? '' }}</td>
                     <td>{{ $p->jury2->nom ?? '-' }} {{ $p->jury2->prenom ?? '' }}</td>
                     <td>{{ $p->jury3->nom ?? '-' }} {{ $p->jury3->prenom ?? '' }}</td>
-                    <td>{{ $p->jury4->nom ?? '-' }} {{ $p->jury4->prenom ?? '' }}</td>
                 </tr>
                 @endforeach
             </tbody>

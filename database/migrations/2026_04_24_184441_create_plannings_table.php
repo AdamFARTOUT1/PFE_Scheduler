@@ -19,7 +19,6 @@ return new class extends Migration
             $table->foreignId('encadrant_id')->constrained('professeurs');
             $table->foreignId('jury2_id')->constrained('professeurs');
             $table->foreignId('jury3_id')->constrained('professeurs');
-            $table->foreignId('jury4_id')->nullable()->constrained('professeurs');
             $table->unique(['salle_id', 'creneau_id'], 'unique_salle_moment');
             $table->timestamps();
         });

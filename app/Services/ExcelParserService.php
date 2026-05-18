@@ -149,8 +149,8 @@ class ExcelParserService
             foreach ($plannings as $p2){
                 if ($p1->id == $p2->id) continue;
                 
-                $profsP1 = [$p1->encadrant_id, $p1->jury2_id, $p1->jury3_id, $p1->jury4_id];
-                $profsP2 = [$p2->encadrant_id, $p2->jury2_id, $p2->jury3_id, $p2->jury4_id];
+                $profsP1 = [$p1->encadrant_id, $p1->jury2_id, $p1->jury3_id];
+                $profsP2 = [$p2->encadrant_id, $p2->jury2_id, $p2->jury3_id];
                 $commonProfs = array_intersect($profsP1, $profsP2);
 
                 if (!empty($commonProfs)){

@@ -98,7 +98,7 @@ class SchedulerService
                             $encadrantId,
                             $jury[0],
                             $jury[1],
-                            $jury[2] ?? null,
+                            null,
                             $salleLibre->id,
                             $planning
                         );
@@ -109,7 +109,6 @@ class SchedulerService
                                 'encadrant_id' => $encadrantId,
                                 'jury1_id'     => $jury[0],
                                 'jury2_id'     => $jury[1],
-                                'jury3_id'     => $jury[2] ?? null,
                                 'salle_id'     => $salleLibre->id,
                                 'date'         => $creneau['date'],
                                 'heure_debut'  => $creneau['heure_debut'],
@@ -211,7 +210,7 @@ class SchedulerService
             if ($p['date'] != $slot['date']) continue;
 
             $profsInPlanning = array_filter([
-                $p['encadrant_id'], $p['jury1_id'], $p['jury2_id'], $p['jury3_id'] ?? null,
+                $p['encadrant_id'], $p['jury1_id'], $p['jury2_id'],
             ]);
 
             if (!in_array($profId, $profsInPlanning)) continue;
