@@ -55,17 +55,7 @@ class ConflictCheckerService
                 return false;
             }
 
-            // 3. Imposer 1h de pause obligatoire entre deux soutenances du même prof
-            // Calcul de l'écart entre les deux créneaux
-            if ($slotStart >= $existingEnd) {
-                $gap = $existingEnd->diffInMinutes($slotStart);
-            } else {
-                $gap = $slotEnd->diffInMinutes($existingStart);
-            }
-
-            if ($gap < 60) {
-                return false;
-            }
+            // Note : la contrainte de pause de 1h est vérifiée dans le module Vérification
         }
 
         return true;

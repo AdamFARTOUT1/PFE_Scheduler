@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('creneaux', function (Blueprint $table) {
@@ -17,12 +14,9 @@ return new class extends Migration
             $table->time('heure_debut');
             $table->time('heure_fin');
             $table->timestamps();
-        });
+        }); 
     }
-
-    /**
-     * Reverse the migrations.
-     */
+    
     public function down(): void
     {
         Schema::dropIfExists('crenaux');

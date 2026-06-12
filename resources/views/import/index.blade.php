@@ -29,24 +29,14 @@
         </div>
 
         <!-- Section d'importation -->
-        <div style="background: #f0f7ff; border: 2px solid #000000ff; border-radius: 8px; padding: 25px; margin: 25px 0;">
+        <div style="background: #f0f7ff; border: 2px solid #000000ff; border-radius: 8px; padding: 25px; margin: 25px 0; text-align: center;">
             <h2 style="color: #000000ff; font-size: 18px; margin-top: 0; margin-bottom: 15px;">Importer les Données</h2>
 
-            <div style="background-color: #ffc8c8ff; padding: 15px; margin: 15px 0; border-radius: 4px; font-size: 14px;">
-                <strong style="color: #ed0000ff;">Format du fichier Excel requis :</strong><br>
-                Votre fichier doit contenir exactement 3 feuilles :
-                <ul style="margin: 10px 0 0; padding-left: 20px;">
-                    <li><strong>Salles</strong> - Colonnes : (A) Nom, (B) Type (Salle/Amphi)</li>
-                    <li><strong>Professeurs</strong> - Colonnes : (B) Nom, (C) Prénom, (D) Spécialité</li>
-                    <li><strong>Étudiants</strong> - Colonnes : (A) Nom, (B) Prénom, (C) Filière (TDIA/ID), (D) Langue
-                        (fr/an)</li>
-                </ul>
-            </div>
-
+            
             <form action="{{ route('import.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
-                <div style="margin: 15px 0;">
+                <div style="margin: 15px 0; display: flex; flex-direction: column; align-items: center;">
                     <label for="file_unified" style="display: block; font-weight: bold; color: #333; margin-bottom: 8px;">
                         Sélectionner le fichier Excel unifié :
                     </label>

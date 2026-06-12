@@ -44,9 +44,10 @@ class ImportController extends Controller
             // Récupérer les statistiques actuelles
             $tdia = \App\Models\Etudiant::where('filiere', 'TDIA')->count();
             $id = \App\Models\Etudiant::where('filiere', 'ID')->count();
+            $gi = \App\Models\Etudiant::where('filiere', 'GI')->count();
             $total = \App\Models\Etudiant::count();
             
-            $message = "Importation réussie ! Total: $total étudiants (TDIA: $tdia, ID: $id)";
+            $message = "Importation réussie ! Total: $total étudiants (TDIA: $tdia, ID: $id, GI: $gi)";
 
             return redirect()->back()->with('success', $message);
 

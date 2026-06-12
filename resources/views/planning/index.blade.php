@@ -36,15 +36,31 @@
     <!-- Header avec bouton générer -->
     <div class="header-actions">
         <h2 style="margin: 0;">Liste du Planning</h2>
-        <form method="POST" action="{{ url('/planning/generer') }}" style="display: flex; align-items: center; gap: 12px;">
+        <form method="POST" action="{{ url('/planning/generer') }}" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
             @csrf
             <label for="date_debut" style="font-weight: bold; color: #333; white-space: nowrap;">Date de début :</label>
             <input type="date" name="date_debut" id="date_debut"
                    value="{{ old('date_debut', date('Y-m-d')) }}"
                    required
                    style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-            <span style="color: #666; font-size: 13px; white-space: nowrap;">(3 jours)</span>
-            <button type="submit" class="btn-generer">⚡ Générer le planning</button>
+            <label for="duree_jours" style="font-weight: bold; color: #333; white-space: nowrap;">Durée :</label>
+            <input type="number" name="duree_jours" id="duree_jours"
+                   value="{{ old('duree_jours', 3) }}"
+                   min="1" max="10" required
+                   style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; width: 70px;">
+            <span style="color: #666; font-size: 13px; white-space: nowrap;">jours</span>
+            <label for="heure_debut" style="font-weight: bold; color: #333; white-space: nowrap;">De :</label>
+            <input type="time" name="heure_debut" id="heure_debut"
+                   value="{{ old('heure_debut', '09:00') }}"
+                   required
+                   style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+            <label for="heure_fin" style="font-weight: bold; color: #333; white-space: nowrap;">À :</label>
+            <input type="time" name="heure_fin" id="heure_fin"
+                   value="{{ old('heure_fin', '18:00') }}"
+                   required
+                   style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+            <span style="color: #666; font-size: 12px; white-space: nowrap;">(pause 12h-14h auto)</span>
+            <button type="submit" class="btn-generer">Générer le planning</button>
         </form>
     </div>
 
@@ -122,19 +138,8 @@
             </tbody>
         </table>
     @else
-        <div class="empty-state">
-            <p>Aucun planning généré</p>
-            <form method="POST" action="{{ url('/planning/generer') }}" style="display:inline; margin-top: 20px;">
-                @csrf
-                <div style="margin-bottom: 15px;">
-                    <label for="date_debut_empty" style="font-weight: bold; color: #333;">Date de début :</label>
-                    <input type="date" name="date_debut" id="date_debut_empty"
-                           value="{{ date('Y-m-d') }}" required
-                           style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; margin-left: 8px;">
-                    <span style="color: #666; font-size: 13px;">(3 jours)</span>
-                </div>
-                <button type="submit" class="btn-generer">⚡ Générer votre premier planning</button>
-            </form>
+        <div class="alert alert-info">
+            <p>Aucun planning généré. Veuillez utiliser le formulaire ci-dessus pour générer un planning.</p>
         </div>
     @endif
 </div>

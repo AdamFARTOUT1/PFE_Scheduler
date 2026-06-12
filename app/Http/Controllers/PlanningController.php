@@ -22,13 +22,15 @@ class PlanningController extends Controller
 
         $jours = $plannings->pluck('creneau.date_pfe')->unique()->filter()->values();
         $salles = Salle::all();
-        $filieres = ['ID', 'TDIA'];
+        $filieres = ['ID', 'TDIA', 'GI'];
 
         return view('planning.index', compact('plannings', 'jours', 'salles', 'filieres'));
     }
 
     public function generer(\Illuminate\Http\Request $request)
     {
+        set_time_limit(120); // Le scheduling peut prendre du temps avec 3 filières
+
         $etudiants = Etudiant::all();
         $professeurs = Professeur::all();
         $salles = Salle::all();
@@ -38,13 +40,19 @@ class PlanningController extends Controller
                 ->with('error', 'Veuillez d\'abord importer les données (étudiants, professeurs, salles).');
         }
 
-        // Date de début choisie par l'utilisateur, divisée sur 3 jours
+        // Date de début et durée choisies par l'utilisateur
         $dateDebut = $request->input('date_debut', date('Y-m-d'));
-        $dateFin = \Carbon\Carbon::parse($dateDebut)->addDays(2)->toDateString();
+        $nbJours = (int) $request->input('duree_jours', 3);
+        $nbJours = max(1, min(10, $nbJours)); // Sécurité : entre 1 et 10 jours
+        $dateFin = \Carbon\Carbon::parse($dateDebut)->addDays($nbJours - 1)->toDateString();
+
+        // Heures de début et fin choisies par l'utilisateur
+        $heureDebut = $request->input('heure_debut', '09:00');
+        $heureFin = $request->input('heure_fin', '18:00');
 
         try {
             $scheduler = app(SchedulerService::class);
-            $results = $scheduler->generate($etudiants, $professeurs, $salles, $dateDebut, $dateFin);
+            $results = $scheduler->generate($etudiants, $professeurs, $salles, $dateDebut, $dateFin, $nbJours, $heureDebut, $heureFin);
 
             // Vider le planning existant (plannings d'abord car il référence creneaux)
             Planning::query()->delete();

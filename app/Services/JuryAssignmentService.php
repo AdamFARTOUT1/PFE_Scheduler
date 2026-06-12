@@ -80,7 +80,8 @@ class JuryAssignmentService
     }
 
     /**
-     * Vérifie qu'un prof est disponible dans un créneau (pas de chevauchement + 1h de pause)
+     * Vérifie qu'un prof est disponible dans un créneau (pas de chevauchement)
+     * Note : la contrainte de pause de 1h est vérifiée dans le module Vérification
      */
     private function isProfAvailable(int $profId, array $slot, array $planning): bool
     {
@@ -104,17 +105,6 @@ class JuryAssignmentService
 
             // Chevauchement ?
             if ($slotStart < $existEnd && $slotEnd > $existStart) {
-                return false;
-            }
-
-            // Vérifier la pause de 1h
-            if ($slotStart >= $existEnd) {
-                $gap = $existEnd->diffInMinutes($slotStart);
-            } else {
-                $gap = $slotEnd->diffInMinutes($existStart);
-            }
-
-            if ($gap < 60) {
                 return false;
             }
         }

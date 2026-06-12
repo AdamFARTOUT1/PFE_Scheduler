@@ -15,12 +15,6 @@ class ExportController extends Controller
     ) {
     }
 
-    /*
-     * Route: GET /export/generate/{doc}/{format}
-     * doc    : affectation | planning | pvs
-     * format : pdf | docx
-     */
-
     public function index()
     {
         return view('export.index');

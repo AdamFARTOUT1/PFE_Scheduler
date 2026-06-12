@@ -11,12 +11,6 @@ use Carbon\Carbon;
 
 class ExcelParserService
 {
-    /**
-     * Import unifié : un seul fichier avec 3 feuilles
-     * - Salles (A: nom, B: type)
-     * - Professeurs (B: nom, C: prenom, D: specialite)
-     * - Étudiants (A: nom, B: prenom, C: filiere, D: langue)
-     */
     public function importUnifiedFile($filePath)
     {
         \Log::info("Début importation unifiée: " . $filePath);
@@ -88,51 +82,6 @@ class ExcelParserService
         return null;
     }
 
-    // Garder les anciennes méthodes pour rétro-compatibilité
-    public function importProfesseurs($filePath)
-    {
-        \Log::info("Début importation professeurs: " . $filePath);
-        try {
-            $spreadsheet = IOFactory::load($filePath);
-            $sheet = $spreadsheet->getActiveSheet();
-            \Log::info("Feuille chargée, lignes: " . $sheet->getHighestRow());
-            $this->saveToDatabase($sheet, Professeur::class, [
-                'nom'        => 'B', 
-                'prenom'     => 'C', 
-                'specialite' => 'D'
-            ]);
-            \Log::info("Importation professeurs terminée");
-        } catch (\Exception $e) {
-            \Log::error("Erreur importation professeurs: " . $e->getMessage());
-            throw $e;
-        }
-    }
-
-    public function importEtudiantsMultiSheets($filePath, $filiere = 'ID')
-    {
-        \Log::info("Début importation étudiants: " . $filePath . ", filière: $filiere");
-        try {
-            $spreadsheet = IOFactory::load($filePath);
-            $sheetNames = $spreadsheet->getSheetNames();
-            \Log::info("Feuilles trouvées: " . json_encode($sheetNames));
-            
-            foreach ($sheetNames as $sheetName) {
-                $sheet = $spreadsheet->getSheetByName($sheetName);
-                \Log::info("Traitement feuille: $sheetName");
-                $this->saveToDatabase($sheet, Etudiant::class, [
-                    'nom'     => 'A',
-                    'prenom'  => 'B',
-                    'filiere' => 'C',
-                    'langue'  => 'D'
-                ]);
-            }
-            \Log::info("Importation étudiants terminée");
-        } catch (\Exception $e) {
-            \Log::error("Erreur importation étudiants: " . $e->getMessage());
-            throw $e;
-        }
-    }
-
     public function checkConformity()
     {
         $anomalies = [];
@@ -179,17 +128,13 @@ class ExcelParserService
         $skipped = 0;
         $errors = [];
         \Log::info("saveToDatabase: modèle=$model, lignes totales=$highestRow");
-        
-        // Sauter la première ligne (en-tête)
         $startRow = 2;
         
         for ($row = $startRow; $row <= $highestRow; $row++) {
             $data = [];
             
-            // Ajouter d'abord les valeurs par défaut
             $data = array_merge($defaults, $data);
             
-            // Ensuite lire les colonnes du mapping
             foreach ($mapping as $field => $column) {
                 $cellValue = $sheet->getCell($column . $row)->getValue();
                 // Nettoyer les espaces supplémentaires et accents

@@ -6,20 +6,51 @@ use Carbon\Carbon;
 
 class DateTimeHelper
 {
+    /**
+     * Génère les créneaux horaires entre startDate et endDate.
+     * Si la plage horaire chevauche 12h, elle est automatiquement découpée
+     * en matin (heureDebut→12:00) et après-midi (14:00→heureFin).
+     */
     public function generate(
         string $startDate,
         string $endDate,
-        array $morningSlots = ['start' => '09:00', 'end' => '12:00'],
-        array $afternoonSlots = ['start' => '14:00', 'end' => '18:00'],
+        string $heureDebut = '09:00',
+        string $heureFin = '18:00',
         int $slotMinutes = 60
     ): array {
         $slots = [];
         $start = Carbon::parse($startDate);
         $end = Carbon::parse($endDate);
 
+        // Déterminer les périodes en fonction de la pause déjeuner (12h-14h)
+        $debut = Carbon::parse($heureDebut);
+        $fin = Carbon::parse($heureFin);
+        $midi = Carbon::parse('12:00');
+        $aprem = Carbon::parse('14:00');
+
+        $periods = [];
+
+        if ($fin->lte($midi)) {
+            // Tout le matin (ex: 09:00 → 11:00)
+            $periods[] = ['start' => $heureDebut, 'end' => $heureFin];
+        } elseif ($debut->gte($aprem)) {
+            // Tout l'après-midi (ex: 14:00 → 17:00)
+            $periods[] = ['start' => $heureDebut, 'end' => $heureFin];
+        } elseif ($debut->gte($midi) && $debut->lt($aprem)) {
+            // Début entre 12h et 14h → on décale à 14h
+            $periods[] = ['start' => '14:00', 'end' => $heureFin];
+        } else {
+            // La plage chevauche midi → on coupe en 2 avec pause 12h-14h
+            $periods[] = ['start' => $heureDebut, 'end' => '12:00'];
+            if ($fin->gt($aprem)) {
+                $periods[] = ['start' => '14:00', 'end' => $heureFin];
+            }
+        }
+
         while ($start->lte($end)) {
-            $this->addSlotsForPeriod($slots, $start->toDateString(), $morningSlots['start'], $morningSlots['end'], $slotMinutes);
-            $this->addSlotsForPeriod($slots, $start->toDateString(), $afternoonSlots['start'], $afternoonSlots['end'], $slotMinutes);
+            foreach ($periods as $period) {
+                $this->addSlotsForPeriod($slots, $start->toDateString(), $period['start'], $period['end'], $slotMinutes);
+            }
             $start->addDay();
         }
 

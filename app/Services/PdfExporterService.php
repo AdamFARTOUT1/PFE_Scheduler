@@ -19,11 +19,7 @@ class PdfExporterService
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    //  AFFECTATION — correspond exactement au PDF exemple
-    //  Format : Encadrant | Etudiant 1 | Etudiant 2 | Etudiant 3 ...
-    //  Groupé par filière (ID puis TDIA)
-    // ─────────────────────────────────────────────────────────────────
+    
     public function generateAffectation(): string
     {
         $plannings = Planning::with(['etudiant', 'encadrant'])->get();

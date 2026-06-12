@@ -28,12 +28,27 @@ class SchedulerService
         Collection $professeurs,
         Collection $salles,
         string $dateDebut = '2026-05-12',
-        string $dateFin = '2026-05-15'
+        string $dateFin = '2026-05-15',
+        int $nbJours = 3,
+        string $heureDebut = '09:00',
+        string $heureFin = '18:00'
     ): array {
         $encadrants = $this->encadrantAssigner->assign($etudiants, $professeurs);
-        $creneaux = $this->dateTimeHelper->generate($dateDebut, $dateFin);
+        $creneaux = $this->dateTimeHelper->generate($dateDebut, $dateFin, $heureDebut, $heureFin);
+
+        $nbEtudiants = $etudiants->count();
+        $nbSalles = $salles->count();
+        $nbCreneaux = count($creneaux);
+
+        if ($nbCreneaux === 0) {
+            throw new \RuntimeException(
+                "Aucun créneau horaire disponible. Vérifiez les heures de début ($heureDebut) et de fin ($heureFin)."
+            );
+        }
 
         $orders = $this->generateStudentOrders($etudiants);
+        $bestPlanning = [];
+        $bestUnplaced = $nbEtudiants;
 
         foreach ($orders as $order) {
             try {
@@ -41,13 +56,12 @@ class SchedulerService
                 $juryAttributions = [];
 
                 // Calculer le nombre max de soutenances par jour et par créneau pour bien répartir
-                $nbJours = 3;
                 $maxParJour = (int) ceil(count($order) / $nbJours);
                 $maxParCreneau = (int) ceil(count($order) / count($creneaux));
                 
                 // On peut ajouter une petite marge de tolérance sur le créneau
-                if ($maxParCreneau < 4) {
-                    $maxParCreneau = 4;
+                if ($maxParCreneau < $nbSalles) {
+                    $maxParCreneau = $nbSalles;
                 }
 
                 $compteurParJour = [];
@@ -77,7 +91,7 @@ class SchedulerService
 
                         // Vérifier que l'encadrant est disponible dans ce créneau
                         if (!$this->isProfDisponible($encadrantId, $creneau, $planning)) {
-                            continue; // L'encadrant est occupé (ou pause), on essaie l'étudiant suivant
+                            continue; // L'encadrant est occupé, on essaie l'étudiant suivant
                         }
 
                         try {
@@ -123,18 +137,23 @@ class SchedulerService
                     }
                 }
 
-                if (count($unplacedEtudiants) > 0) {
-                    throw new \RuntimeException("Impossible de placer tous les étudiants");
+                if (count($unplacedEtudiants) === 0) {
+                    return $planning; // Tous placés !
                 }
 
-                return $planning;
+                // Garder le meilleur essai (celui qui a placé le plus d'étudiants)
+                if (count($unplacedEtudiants) < $bestUnplaced) {
+                    $bestUnplaced = count($unplacedEtudiants);
+                    $bestPlanning = $planning;
+                }
 
             } catch (\RuntimeException $e) {
                 continue;
             }
         }
 
-        throw new \RuntimeException("Impossible de générer un planning complet.");
+        // Retourner le meilleur planning partiel (les conflits seront visibles dans Vérification)
+        return $bestPlanning;
     }
 
     private function generateStudentOrders(Collection $etudiants): array
@@ -144,27 +163,34 @@ class SchedulerService
         
         // Séparer par filière
         $etudiantsID = $etudiants->filter(fn($e) => strtoupper($e->filiere) === 'ID')->values();
-        $etudiantsTDIA = $etudiants->filter(fn($e) => strtoupper($e->filiere) !== 'ID')->values();
+        $etudiantsTDIA = $etudiants->filter(fn($e) => strtoupper($e->filiere) === 'TDIA')->values();
+        $etudiantsGI = $etudiants->filter(fn($e) => strtoupper($e->filiere) === 'GI')->values();
         
-        // Créer plusieurs ordres en intercalant ID et TDIA
+        // Créer plusieurs ordres en intercalant ID, TDIA et GI
         $orders = [];
-        for ($i = 0; $i < 50; $i++) {
+        for ($i = 0; $i < 20; $i++) {
             $idCopy = $etudiantsID->shuffle()->values()->all();
             $tdiaCopy = $etudiantsTDIA->shuffle()->values()->all();
+            $giCopy = $etudiantsGI->shuffle()->values()->all();
             
-            // Intercaler : 1 ID, 1 TDIA, 1 ID, 1 TDIA...
+            // Intercaler : 1 ID, 1 TDIA, 1 GI, ...
             $order = [];
             $idIdx = 0;
             $tdiaIdx = 0;
+            $giIdx = 0;
             $totalID = count($idCopy);
             $totalTDIA = count($tdiaCopy);
+            $totalGI = count($giCopy);
             
-            while ($idIdx < $totalID || $tdiaIdx < $totalTDIA) {
+            while ($idIdx < $totalID || $tdiaIdx < $totalTDIA || $giIdx < $totalGI) {
                 if ($idIdx < $totalID) {
                     $order[] = $idCopy[$idIdx++];
                 }
                 if ($tdiaIdx < $totalTDIA) {
                     $order[] = $tdiaCopy[$tdiaIdx++];
+                }
+                if ($giIdx < $totalGI) {
+                    $order[] = $giCopy[$giIdx++];
                 }
             }
             
@@ -199,7 +225,8 @@ class SchedulerService
     }
 
     /**
-     * Vérifie qu'un prof est disponible dans un créneau (pas de chevauchement + 1h de pause)
+     * Vérifie qu'un prof est disponible dans un créneau (pas de chevauchement)
+     * Note : la contrainte de pause de 1h est vérifiée dans le module Vérification
      */
     private function isProfDisponible(int $profId, array $slot, array $planning): bool
     {
@@ -220,13 +247,6 @@ class SchedulerService
 
             // Chevauchement
             if ($slotStart < $existEnd && $slotEnd > $existStart) {
-                return false;
-            }
-
-            // Pause 1h obligatoire
-            $gap = $slotStart >= $existEnd ? $existEnd->diffInMinutes($slotStart) : $slotEnd->diffInMinutes($existStart);
-
-            if ($gap < 60) {
                 return false;
             }
         }

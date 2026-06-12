@@ -181,6 +181,15 @@ body {
     font-weight: bold;
 }
 
+.badge-gi {
+    background-color: #8e44ad;
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
 /* ---- Barres CSS ---- */
 .barre-conteneur {
     background-color: #ecf0f1;
@@ -425,6 +434,12 @@ table tbody tr:hover {
 
 .cellule-tdia {
     background-color: #d5f5e3;
+    border-radius: 4px;
+    padding: 6px;
+}
+
+.cellule-gi {
+    background-color: #e8daef;
     border-radius: 4px;
     padding: 6px;
 }

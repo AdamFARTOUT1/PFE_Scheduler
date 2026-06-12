@@ -6,8 +6,7 @@ use App\Models\Planning;
 use App\Models\Professeur;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
-use PhpOffice\PhpWord\Style\Table;
-use PhpOffice\PhpWord\SimpleType\Jc;
+use PhpOffice\PhpWord\Shared\Html;
 use ZipArchive;
 
 class WordExporterService
@@ -15,28 +14,26 @@ class WordExporterService
     private string $outputDir;
     private string $pvDir;
 
-    const BLEU_ENSA = '003580';
-    const BLEU_MID = '1e3a8a';
-    const GRIS_HEADER = 'D0D8E8';
-    const BLEU_LIGHT = 'EEF2FF';
-    const BLANC = 'FFFFFF';
+    const BLEU_ENSA = '#003580';
+    const BLEU_LIGHT = '#EEF2FF';
+    const BLANC = '#ffffff';
+    const TURQUOISE_ID = '#A3D7FD';
+    const ORANGE_TDIA = '#F8D983';
+    const GREEN_GI = '#b6f68b';
 
     public function __construct()
     {
         $this->outputDir = storage_path('app/outputs');
-        $this->pvDir = $this->outputDir . DIRECTORY_SEPARATOR . 'PV';
-        foreach ([$this->outputDir, $this->pvDir] as $dir) {
-            if (!is_dir($dir))
-                mkdir($dir, 0775, true);
-        }
+        $this->pvDir     = $this->outputDir . '/PV';
+
+        if (!is_dir($this->outputDir)) mkdir($this->outputDir, 0775, true);
+        if (!is_dir($this->pvDir))     mkdir($this->pvDir,     0775, true);
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    //  AFFECTATION — DOCX
-    // ═══════════════════════════════════════════════════════════════
-    public function generateAffectation(): string
+    //  AFFECTATION : HTML -> DOCX 
+    private function buildAffectationHtml(): string
     {
-        $phpWord = $this->baseDoc('Affectation des Encadrants PFE');
+        
         $plannings = Planning::with(['etudiant', 'encadrant'])->get();
 
         $professeurs = $plannings->groupBy('encadrant_id')->map(function ($items) {
@@ -47,246 +44,216 @@ class WordExporterService
             return $prof;
         })->filter()->sortBy('nom')->values();
 
-        $maxEtudiants = max($professeurs->max(fn($p) => $p->etudiants->count()), 3);
+        $max = max($professeurs->max(fn($p) => $p->etudiants->count()), 3);
 
-        $section = $phpWord->addSection([
-            'orientation' => 'landscape',
-            'paperSize' => 'A4',
-            'marginTop' => 700,
-            'marginBottom' => 700,
-            'marginLeft' => 600,
-            'marginRight' => 700,
-        ]);
-
-        $this->entete($section, "Affectation des encadrants de Projet de Fin d'Etude");
-        $this->sousTitre($section, 'Année Universitaire 2025/2026');
-        $section->addTextBreak(1);
-
-        $wEnc = 2800;
-        $wEtu = (int) ((12000 - $wEnc) / $maxEtudiants);
-
-        // Légende des couleurs
-        $section->addText('Légende :', ['bold' => true, 'size' => 10]);
-        $tr = $section->addTextRun();
-        $tr->addText('      ID', ['color' => '80CBC4', 'size' => 10], ['shading' => ['fill' => '80CBC4']]);
-        $tr->addText('         ');
-        $tr->addText('      TDIA', ['color' => 'FFAB91', 'size' => 10], ['shading' => ['fill' => 'FFAB91']]);
-        $section->addTextBreak(1);
-
-        $styleName = 'Aff_Globale';
-        $phpWord->addTableStyle($styleName, ['borderSize' => 10, 'borderColor' => '999999', 'cellMargin' => 50]);
-        $table = $section->addTable($styleName);
-
-        $table->addRow(500);
-        $table->addCell($wEnc, ['bgColor' => self::BLEU_ENSA])
-            ->addText('Encadrant', ['bold' => true, 'size' => 9, 'color' => self::BLANC], ['alignment' => Jc::CENTER]);
-        for ($i = 1; $i <= $maxEtudiants; $i++) {
-            $table->addCell($wEtu, ['bgColor' => self::BLEU_ENSA])
-                ->addText("Etudiant {$i}", ['bold' => true, 'size' => 9, 'color' => self::BLANC], ['alignment' => Jc::CENTER]);
+        $colonnes = '<th style="background-color:' . self::BLEU_ENSA . '; color:white; padding:3px; border:1px solid #999; font-size:10px;">Encadrant</th>';
+        for ($i = 1; $i <= $max; $i++) {
+            $colonnes .= "<th style='background-color:" . self::BLEU_ENSA . "; color:white; padding:3px; border:1px solid #999; font-size:10px;'>Etudiant {$i}</th>";
         }
 
-        $rowIdx = 0;
+        $legende = "
+        <div style='margin-bottom:8px; font-size:10px;'>
+            <strong>Légende :</strong>
+            <span style='display:inline-block; margin-left:20px;'>
+                <span style='background-color:" . self::TURQUOISE_ID . "; color:white; padding:3px 8px; border-radius:3px;'>ID</span>
+                <span style='background-color:" . self::ORANGE_TDIA . "; color:white; padding:3px 8px; border-radius:3px;'>TDIA</span>
+                <span style='background-color:" . self::GREEN_GI . "; color:white; padding:3px 8px; border-radius:3px;'>GI</span>
+            </span>
+        </div>";
+
+
+        $lignes = '';
         foreach ($professeurs as $prof) {
             $etudiants = $prof->etudiants->values();
-            $table->addRow(390);
-            $table->addCell($wEnc, ['bgColor' => self::BLANC])
-                ->addText($prof->nom . ' ' . $prof->prenom, ['bold' => true, 'size' => 9]);
-
-            for ($i = 0; $i < $maxEtudiants; $i++) {
+            $cells = "<td style='padding:2px; border:1px solid #ddd; font-size:9px; white-space:nowrap;'>{$prof->nom} {$prof->prenom}</td>";
+            for ($i = 0; $i < $max; $i++) {
                 if (isset($etudiants[$i])) {
-                    $e = $etudiants[$i];
-                    $txt = strtoupper($e->nom) . ' ' . strtoupper($e->prenom);
-                    $etuBg = ($e->filiere === 'ID') ? '80CBC4' : 'FFAB91';
+                    $nom = strtoupper($etudiants[$i]->nom) . ' ' . strtoupper($etudiants[$i]->prenom);
+                    $bg = ($etudiants[$i]->filiere === 'ID') ? self::TURQUOISE_ID : (($etudiants[$i]->filiere === 'TDIA') ? self::ORANGE_TDIA : self::GREEN_GI);
                 } else {
-                    $txt = '----';
-                    $etuBg = self::BLANC;
+                    $nom = '—';
+                    $bg = self::BLANC;
                 }
-
-                $table->addCell($wEtu, ['bgColor' => $etuBg])
-                    ->addText($txt, ['size' => 9], ['alignment' => Jc::CENTER]);
+                $cells .= "<td style='background-color:{$bg}; padding:2px; border:1px solid #ddd; text-align:center; font-size:9px;'>{$nom}</td>";
             }
-            $rowIdx++;
+            $lignes .= "<tr>{$cells}</tr>";
         }
-        $section->addTextBreak(2);
 
-        $this->pied($section);
-        $path = $this->outputDir . DIRECTORY_SEPARATOR . 'affectation.docx';
-        IOFactory::createWriter($phpWord, 'Word2007')->save($path);
-        return $path;
+
+        $html = "
+        <h2 style='text-align:center; margin:5px 0px;font-weight:bold;'>
+            Ecole Nationale des Sciences Appliquées - Al Hoceima
+        </h2>
+        <h3 style='text-align:center; margin:3px 0px;'>
+            Affectation des encadrants de Projet de Fin d'Etude
+        </h3>
+        <p style='text-align:center; margin:2px 0px; font-size:10px;'>Année Universitaire 2025/2026</p>
+        {$legende}
+        <table style='width:100%; border-collapse:collapse; border:1px solid #999;'>
+            <thead><tr>{$colonnes}</tr></thead>
+            <tbody>{$lignes}</tbody>
+        </table>
+        ";
+
+        return $html;
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    //  PLANNING — DOCX
-    // ═══════════════════════════════════════════════════════════════
-    public function generatePlanning(): string
+    public function generateAffectation(): string
     {
-        $phpWord = $this->baseDoc('Planning des Soutenances PFE');
-        $section = $phpWord->addSection([
-            'orientation' => 'landscape',
-            'paperSize' => 'A4',
-            'marginTop' => 700,
-            'marginBottom' => 700,
-            'marginLeft' => 700,
-            'marginRight' => 700,
-        ]);
+        $html = $this->buildAffectationHtml();
+        return $this->htmlToDocx($html, 'affectation.docx', 'landscape');
+    }
 
-        $plannings = Planning::with(['etudiant', 'encadrant', 'jury2', 'jury3', 'creneau', 'salle'])
-            ->join('creneaux', 'plannings.creneau_id', '=', 'creneaux.id')
-            ->orderBy('creneaux.date_pfe')
-            ->orderBy('creneaux.heure_debut')
-            ->select('plannings.*')
-            ->get();
+    public function getAffectationHtml(): string
+    {
+        return $this->buildAffectationHtml();
+    }
 
-        $this->entete($section, "Planning des soutenances des Projets de Fin d'Etude");
-        $this->sousTitre($section, "(Première Session) — Année Universitaire 2024/2025");
-        $section->addTextBreak(1);
-
-        $phpWord->addTableStyle('PlanTable', ['borderSize' => 4, 'borderColor' => 'AAAAAA', 'cellMargin' => 50]);
-        $table = $section->addTable('PlanTable');
-
-        $headers = ['ID', 'Encadrant', 'Jury 1', 'Jury 2', 'Date', 'Heure', 'Salle', "Nom d'étudiant", "Prénom d'étudiant"];
-        $widths = [365, 1600, 1600, 1600, 850, 450, 600, 1500, 1550];
-
-        $table->addRow(450);
-        foreach ($headers as $i => $h) {
-            $table->addCell($widths[$i], ['bgColor' => self::BLEU_ENSA])
-                ->addText($h, ['bold' => true, 'size' => 8, 'color' => self::BLANC], ['alignment' => Jc::CENTER]);
-        }
-
-        $profColors = [];
-        $usedProfColors = [];
-        $dayColors = [];
-        $availableDayColors = ['FFCDD2', 'C8E6C9', 'BBDEFB', 'FFE082', 'E1BEE7', 'B2DFDB', 'D7CCC8', 'CFD8DC'];
-        $dayColorIndex = 0;
+    //  PLANNING : HTML -> DOCX
+    private function buildPlanningHtml(): string
+    {
+        $plannings = Planning::with([
+            'etudiant', 'encadrant', 'jury2', 'jury3', 'creneau', 'salle'
+        ])
+        ->join('creneaux', 'plannings.creneau_id', '=', 'creneaux.id')
+        ->orderBy('creneaux.date_pfe')
+        ->orderBy('creneaux.heure_debut')
+        ->select('plannings.*')
+        ->get();
 
         $availableProfColors = [
-            'FFB3BA',
-            'FFDFBA',
-            'FFFFBA',
-            'BAFFC9',
-            'BAE1FF',
-            'F4C2C2',
-            'FADADD',
-            'FDFD96',
-            'C1E1C1',
-            'AEC6CF',
-            'FFCBA4',
-            'FFD1DC',
-            'C8E6C9',
-            'D1C4E9',
-            'B3E5FC',
-            'FFCC80',
-            'F8BBD0',
-            'DCEDC8',
-            'B2DFDB',
-            'FFE082',
-            'E1BEE7',
-            'C5CAE9',
-            'BCAAA4',
-            'FFAB91',
-            'FFE0B2',
-            'F0F4C3',
-            'E6EE9C',
-            'CE93D8',
-            '9FA8DA',
-            '81D4FA',
-            '80DEEA',
-            '80CBC4',
-            'A5D6A7',
-            'C5E1A5',
-            'FFF59D',
-            'FFE082',
-            'FFCC80',
-            'FFAB91',
-            'BCAAA4',
-            'EEEEEE'
+            '#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF',
+            '#F4C2C2', '#FADADD', '#FDFD96', '#C1E1C1', '#AEC6CF',
+            '#FFCBA4', '#FFD1DC', '#C8E6C9', '#D1C4E9', '#B3E5FC',
+            '#FFCC80', '#F8BBD0', '#DCEDC8', '#B2DFDB', '#FFE082',
+            '#E1BEE7', '#C5CAE9', '#BCAAA4', '#FFAB91', '#FFE0B2',
         ];
-        $profColorIndex = 0;
+        $availableDayColors = ['#FFCDD2', '#C8E6C9', '#BBDEFB', '#FFE082', '#E1BEE7', '#B2DFDB'];
 
-        $getProfColor = function ($name) use (&$profColors, &$availableProfColors, &$profColorIndex) {
+        $profColors = [];
+        $dayColors = [];
+        $profIdx = 0;
+        $dayIdx = 0;
+
+        // Attribuer les couleurs aux profs et dates 
+        $getProfColor = function($name) use (&$profColors, &$availableProfColors, &$profIdx) {
             $name = trim($name);
-            if (empty($name))
-                return self::BLANC;
-
+            if (empty($name)) return self::BLANC;
             if (!isset($profColors[$name])) {
-                $profColors[$name] = $availableProfColors[$profColorIndex % count($availableProfColors)];
-                $profColorIndex++;
+                $profColors[$name] = $availableProfColors[$profIdx++ % count($availableProfColors)];
             }
             return $profColors[$name];
         };
 
-        $getDayColor = function ($date) use (&$dayColors, &$availableDayColors, &$dayColorIndex) {
-            if (empty($date))
-                return self::BLANC;
+        $getDayColor = function($date) use (&$dayColors, &$availableDayColors, &$dayIdx) {
+            if (empty($date)) return self::BLANC;
             if (!isset($dayColors[$date])) {
-                $dayColors[$date] = $availableDayColors[$dayColorIndex % count($availableDayColors)];
-                $dayColorIndex++;
+                $dayColors[$date] = $availableDayColors[$dayIdx++ % count($availableDayColors)];
             }
             return $dayColors[$date];
         };
 
+
+        $lignes = '';
         $id = 1;
         foreach ($plannings as $p) {
             $heure = intval(substr($p->creneau->heure_debut, 0, 2)) . 'h';
-            $date = \Carbon\Carbon::parse($p->creneau->date_pfe)->format('d/m/Y');
-
+            $date  = \Carbon\Carbon::parse($p->creneau->date_pfe)->format('d/m/Y');
+            
             $encadrantStr = $p->encadrant->nom . ' ' . $p->encadrant->prenom;
             $jury1Str = $p->jury2->nom . ' ' . $p->jury2->prenom;
-            $jury2Str = $p->jury3->nom . ' ' . $p->jury3->prenom;
+            $jury2Str = $p->jury3 ? ($p->jury3->nom . ' ' . $p->jury3->prenom) : '';
 
             $bgEnc = $getProfColor($encadrantStr);
             $bgJ1 = $getProfColor($jury1Str);
-            $bgJ2 = $getProfColor($jury2Str);
+            $bgJ2 = $jury2Str ? $getProfColor($jury2Str) : self::BLANC;
             $bgDate = $getDayColor($date);
+            $bgRow = ($id % 2 === 0) ? self::BLEU_LIGHT : self::BLANC;
 
-            $bg = ($id % 2 === 0) ? self::BLEU_LIGHT : self::BLANC;
-            $ts = ['size' => 8];
 
-            $table->addRow(360);
-            $table->addCell($widths[0], ['bgColor' => $bg])->addText((string) $id, $ts, ['alignment' => Jc::CENTER]);
-            $table->addCell($widths[1], ['bgColor' => $bgEnc])->addText($encadrantStr, $ts);
-            $table->addCell($widths[2], ['bgColor' => $bgJ1])->addText($jury1Str, $ts);
-            $table->addCell($widths[3], ['bgColor' => $bgJ2])->addText($jury2Str, $ts);
-            $table->addCell($widths[4], ['bgColor' => $bgDate])->addText($date, $ts, ['alignment' => Jc::CENTER]);
-            $table->addCell($widths[5], ['bgColor' => $bg])->addText($heure, $ts, ['alignment' => Jc::CENTER]);
-            $table->addCell($widths[6], ['bgColor' => $bg])->addText($p->salle->nom, $ts, ['alignment' => Jc::CENTER]);
-            $table->addCell($widths[7], ['bgColor' => $bg])->addText(strtoupper($p->etudiant->nom), $ts);
-            $table->addCell($widths[8], ['bgColor' => $bg])->addText(strtoupper($p->etudiant->prenom), $ts);
+            $lignes .= "
+            <tr>
+                <td style='background-color:{$bgRow}; padding:3px; border:1px solid #ccc; text-align:center; font-size:9px;'>{$id}</td>
+                <td style='background-color:{$bgEnc}; padding:3px; border:1px solid #ccc; font-size:9px;'>{$encadrantStr}</td>
+                <td style='background-color:{$bgJ1}; padding:3px; border:1px solid #ccc; font-size:9px;'>{$jury1Str}</td>
+                <td style='background-color:{$bgJ2}; padding:3px; border:1px solid #ccc; font-size:9px;'>{$jury2Str}</td>
+                <td style='background-color:{$bgDate}; padding:3px; border:1px solid #ccc; text-align:center; font-size:9px;'>{$date}</td>
+                <td style='background-color:{$bgRow}; padding:3px; border:1px solid #ccc; text-align:center; font-size:9px;'>{$heure}</td>
+                <td style='background-color:{$bgRow}; padding:3px; border:1px solid #ccc; text-align:center; font-size:9px;'>{$p->salle->nom}</td>
+                <td style='background-color:{$bgRow}; padding:3px; border:1px solid #ccc; font-size:9px;'>" . strtoupper($p->etudiant->nom) . "</td>
+                <td style='background-color:{$bgRow}; padding:3px; border:1px solid #ccc; font-size:9px;'>" . strtoupper($p->etudiant->prenom) . "</td>
+                <td style='background-color:{$bgRow}; padding:3px; border:1px solid #ccc; font-size:9px;'>" . $p->etudiant->filiere . "</td>
+            </tr>";
             $id++;
         }
 
-        $this->pied($section);
-        $path = $this->outputDir . DIRECTORY_SEPARATOR . 'planning.docx';
-        IOFactory::createWriter($phpWord, 'Word2007')->save($path);
-        return $path;
+
+        $html = "
+        <h1 style='text-align:center; margin:5px 0px; font-weight:bold;'>
+            Ecole Nationale des Sciences Appliquées - Al Hoceima
+        </h1>
+        <h2 style='text-align:center; margin:5px 0px;'>
+            Departement Mathématiques et Informatique<br/>
+        </h2>
+        <h3 style='text-align:center; margin:3px 0px;'>
+            Planning des soutenances des Projets de Fin d'Etude
+        </h3>
+        <p style='text-align:center; margin:2px 0px; font-size:10px;'>(Première Session) <br/> Année Universitaire 2025/2026 <br/></p>
+        <table style='width:100%; border-collapse:collapse; border:1px solid #999;'>
+            <thead>
+                <tr >
+                    <th style='background-color:black; color:white;padding:4px; border:1px solid #999; font-size:10px;'>ID</th>
+                    <th style='background-color:black; color:white;padding:4px; border:1px solid #999; font-size:10px;'>Encadrant</th>
+                    <th style='background-color:black; color:white;padding:4px; border:1px solid #999; font-size:10px;'>Jury 1</th>
+                    <th style='background-color:black; color:white;padding:4px; border:1px solid #999; font-size:10px;'>Jury 2</th>
+                    <th style='background-color:black; color:white;padding:4px; border:1px solid #999; font-size:10px;'>Date</th>
+                    <th style='background-color:black; color:white;padding:4px; border:1px solid #999; font-size:10px;'>Heure</th>
+                    <th style='background-color:black; color:white;padding:4px; border:1px solid #999; font-size:10px;'>Salle</th>
+                    <th style='background-color:black; color:white;padding:4px; border:1px solid #999; font-size:10px;'>Nom</th>
+                    <th style='background-color:black; color:white;padding:4px; border:1px solid #999; font-size:10px;'>Prénom</th>
+                    <th style='background-color:black; color:white;padding:4px; border:1px solid #999; font-size:10px;'>Filière</th>
+                </tr>
+            </thead>
+            <tbody>
+                {$lignes}
+            </tbody>
+        </table>
+        ";
+
+        return $html;
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    //  PVs — ZIP
-    // ═══════════════════════════════════════════════════════════════
+    public function generatePlanning(): string {
+    $html = $this->buildPlanningHtml();
+    return $this->htmlToDocx($html, 'planning.docx', 'landscape');
+    }
+
+    public function getPlanningHtml(): string {
+        return $this->buildPlanningHtml();
+    }
+
+    //  PVs : Template Word -> ZIP
     public function generatePVsZip(): \Symfony\Component\HttpFoundation\BinaryFileResponse
     {
-        $plannings = Planning::with(['etudiant', 'encadrant', 'jury2', 'jury3', 'creneau', 'salle'])
-            ->join('creneaux', 'plannings.creneau_id', '=', 'creneaux.id')
-            ->orderBy('creneaux.date_pfe')
-            ->orderBy('creneaux.heure_debut')
-            ->select('plannings.*')
-            ->get();
+        $plannings = Planning::with([
+            'etudiant', 'encadrant', 'jury2', 'jury3', 'creneau', 'salle'
+        ])->get();
 
+        // Vider le dossier PV
         $this->viderDossier($this->pvDir);
 
         foreach ($plannings->groupBy('encadrant_id') as $items) {
             $encadrant = $items->first()->encadrant;
-            $encDir = $this->pvDir . DIRECTORY_SEPARATOR . $this->slug($encadrant->nom . '_' . $encadrant->prenom);
-            if (!is_dir($encDir))
-                mkdir($encDir, 0775, true);
+            $encDir    = $this->pvDir . '/' . $this->slug($encadrant->nom . '_' . $encadrant->prenom);
+            if (!is_dir($encDir)) mkdir($encDir, 0775, true);
 
             foreach ($items as $planning) {
                 $this->generateSinglePV($planning, $encDir);
             }
         }
 
-        $zipPath = $this->outputDir . DIRECTORY_SEPARATOR . 'PVs_Evaluations.zip';
+        // Creer le ZIP
+        $zipPath = $this->outputDir . '/PVs_Evaluations.zip';
         $this->zipper($this->pvDir, $zipPath);
 
         return response()->download($zipPath, 'PVs_Evaluations_' . now()->format('Ymd') . '.zip', [
@@ -294,257 +261,76 @@ class WordExporterService
         ]);
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    //  PV INDIVIDUEL — format exact du template
-    // ═══════════════════════════════════════════════════════════════
+    //  PV INDIVIDUEL 
     private function generateSinglePV(Planning $planning, string $dir): void
     {
-        $phpWord = $this->baseDoc("Fiche d'évaluation PFE");
-        $etudiant = $planning->etudiant;
-        $enc = $planning->encadrant;
-        $creneau = $planning->creneau;
+        // Charger le template 
+        $templatePath = resource_path('templates/pv_template1.docx');
 
-        $date = \Carbon\Carbon::parse($creneau->date_pfe)->format('d/m/Y');
+        if (file_exists($templatePath)) {
+            $template = new \PhpOffice\PhpWord\TemplateProcessor($templatePath);
 
-        $section = $phpWord->addSection([
-            'paperSize' => 'A4',
-            'marginTop' => 200,
-            'marginBottom' => 400,
-            'marginLeft' => 800,
-            'marginRight' => 500,
-        ]);
+            $etudiant = $planning->etudiant;
+            $date     = \Carbon\Carbon::parse($planning->creneau->date_pfe)->format('d/m/Y');
+            $heure    = intval(substr($planning->creneau->heure_debut, 0, 2)) . 'h';
 
-        $centre = ['alignment' => Jc::CENTER];
-        $bu = ['bold' => true, 'underline' => 'single', 'size' => 11]; // bold + underline
-        $buNormal = ['bold' => true, 'underline' => 'single', 'size' => 10];
-        $normal = ['size' => 10];
-        $small = ['size' => 9];
-        $dots60 = str_repeat('.', 60);
-        $dots50 = str_repeat('.', 50);
-        $dots15 = str_repeat('.', 15);
+            $template->setValue('nom_etudiant',
+                strtoupper($etudiant->nom) . ' ' . strtoupper($etudiant->prenom));
+            $template->setValue('filiere',    $etudiant->filiere);
+            $template->setValue('date',       $date);
+            $template->setValue('heure',      $heure);
+            $template->setValue('salle',      $planning->salle->nom);
+            $template->setValue('encadrant',
+                $planning->encadrant->nom . ' ' . $planning->encadrant->prenom);
+            $template->setValue('jury2',
+                $planning->jury2->nom . ' ' . $planning->jury2->prenom);
+            $template->setValue('jury3',
+                $planning->jury3->nom . ' ' . $planning->jury3->prenom);
+            $template->setValue('check_id',
+                $etudiant->filiere === 'ID'   ? '☑' : '☐');
+            $template->setValue('check_tdia',
+                $etudiant->filiere === 'TDIA' ? '☑' : '☐');
+            $template->setValue('check_gi',
+                $etudiant->filiere === 'GI' ? '☑' : '☐');
 
-        // ── 1. EN-TÊTE ──────────────────────────────────────────────
-        // Ajouter le logo de l'uae
-        $headerTable = $section->addTable(['borderSize' => 0, 'cellMargin' => 0]);
-        $headerTable->addRow();
-        // Cellule Gauche : Logo UAE
-        $headerTable->addCell(2100)->addImage(public_path('images/uae.png'), [
-            'width' => 62,
-            'height' => 62,
-            'alignment' => Jc::CENTER
-        ]);
-        // Cellule Centre : Texte Université
-        $centerCell = $headerTable->addCell(6100);
-        $centerCell->addText('UNIVERSITE ABDELMALEK ESSAADI', $bu, [
-            'alignment' => Jc::CENTER,
-            'spaceBefore' => 180 // Ajoute environ 9 points d'espace au-dessus du texte
-        ]);
-        $centerCell->addText('Ecole Nationale des Sciences Appliquées d\'Al Hoceima - Maroc', $buNormal, $centre);
-        // Cellule Droite : Logo ENSAH
-        $headerTable->addCell(2100)->addImage(public_path('images/ensah.png'), [
-            'width' => 62,
-            'height' => 62,
-            'alignment' => Jc::CENTER
-        ]);
-        $section->addText(
-            'Département de Mathématiques et Informatique',
-            $bu,
-            $centre
-        );
-        $section->addText(
-            "Fiche d'évaluation du Projet de Fin d'Etude",
-            $bu,
-            $centre
-        );
-        $section->addText(
-            'Année Universitaire : 2025-2026',
-            $buNormal,
-            $centre
-        );
+            $filename = $this->slug($etudiant->nom . '_' . $etudiant->prenom) . '.docx';
+            $template->saveAs($dir . '/' . $filename);
 
-        $section->addTextBreak(1);
-
-        // ── 2. NOM - PRÉNOM ──────────────────────────────────────────
-        $section->addText("Nom - Prénom de l'élève ingénieur :", $buNormal);
-
-        $nomEtudiant = strtoupper($etudiant->nom) . ' ' . strtoupper($etudiant->prenom);
-        $dotsNom = str_repeat('.', max(5, 52 - strlen($nomEtudiant)));
-        $section->addListItem($nomEtudiant . ' ' . $dotsNom, 0, $normal);
-
-
-        // ── 3. FILIÈRE ───────────────────────────────────────────────
-        $idCheck = ($etudiant->filiere === 'ID') ? '☑' : '☐';
-        $tdiaCheck = ($etudiant->filiere === 'TDIA') ? '☑' : '☐';
-
-        $tr = $section->addTextRun();
-        $tr->addText('Filière :', $buNormal);
-        $tr->addText('         ' . $idCheck . ' Ingénierie Donnée  ', $normal);
-        $tr->addText('   ' . $tdiaCheck . ' Transformation Digitale et Intelligence Artificielle', $normal);
-
-        // ── 4. INTITULÉ DU RAPPORT ───────────────────────────────────
-        $section->addText("Intitulé du rapport :", $buNormal);
-        $section->addListItem($dots60, 0, $normal);
-
-        // ── 5. ENCADRANT ─────────────────────────────────────────────
-        $section->addText("L'encadrant(e) interne :", $buNormal);
-
-        $encNom = 'Pr. ' . $enc->nom . ' ' . $enc->prenom;
-        $dotsEnc = str_repeat('.', max(5, 52 - strlen($encNom)));
-        $section->addListItem($encNom . ' ' . $dotsEnc, 0, $normal);
-
-        // ── 6. MEMBRES DU JURY ───────────────────────────────────────
-        $section->addText('Membres du jury :', $buNormal);
-
-        $phpWord->addTableStyle('JuryPV', [
-            'borderSize' => 4,
-            'borderColor' => '000000',
-            'cellMargin' => 60,
-        ]);
-        $juryTable = $section->addTable('JuryPV');
-
-        $membres = array_filter([
-            ['prof' => $planning->jury2, 'role' => 'Président'],
-            ['prof' => $planning->jury3, 'role' => 'Rapporteur'],
-        ]);
-
-        foreach ($membres as $m) {
-            $profNom = 'Pr. ' . $m['prof']->nom . ' ' . $m['prof']->prenom;
-            $dotsProf = str_repeat('.', max(5, 48 - strlen($profNom)));
-
-            $juryTable->addRow(420);
-            $juryTable->addCell(7500)->addText(
-                '  •  ' . $profNom . ' ',
-                $normal
-            );
-            $juryTable->addCell(1800)->addText(
-                $m['role'],
-                $normal,
-                ['alignment' => Jc::RIGHT]
-            );
         }
-
-        $section->addTextBreak(1);
-
-        // ── 7. NOTE DU CONTENU ───────────────────────────────────────
-        $trContenu = $section->addTextRun(['spaceAfter' => 40]);
-        $trContenu->addText('Note du Contenu ', ['bold' => true, 'underline' => 'single', 'size' => 10]);
-        $trContenu->addText("(En prenant en compte l'appréciation de l'entreprise)", ['italic' => true, 'size' => 9]);
-
-        $section->addText('      C =', $normal);
-
-
-        // ── 8. NOTE DU MÉMOIRE ───────────────────────────────────────
-        $section->addText('Note du Mémoire', $buNormal);
-        $section->addText('      M =', $normal);
-
-
-        // ── 9. NOTE DE LA SOUTENANCE ─────────────────────────────────
-        $section->addText('Note de la Soutenance', $buNormal);
-        $section->addText('      S =', $normal);
-
-
-        // ── 10. TABLEAU MOYENNE ───────────────────────────────────────
-        $phpWord->addTableStyle('MoyennePV', [
-            'borderSize' => 6,
-            'borderColor' => '000000',
-            'cellMargin' => 80,
-        ]);
-        $moyTable = $section->addTable('MoyennePV');
-
-        // Ligne header : MOYENNE (fond gris)
-        $moyTable->addRow(300);
-        $moyTable->addCell(9300, ['bgColor' => 'AAAAAA'])->addText(
-            'MOYENNE',
-            ['bold' => true, 'size' => 10],
-            ['alignment' => Jc::CENTER]
-        );
-
-        // Ligne formule
-        $moyTable->addRow(380);
-        $moyTable->addCell(9300)->addText(
-            'Moyenne   =   C * 0,5 + M * 0,2 + S * 0,3   =',
-            ['bold' => true, 'size' => 10]
-        );
-
-        $section->addTextBreak(1);
-
-        // ── 11. DATE + SIGNATURES ─────────────────────────────────────
-        $section->addText('Le : ' . $date . '          ', $normal);
-
-        $section->addText('Signature des membres du jury :', $normal);
-        //les nom des membres du jury dans meme ligne avec underscore
-        $nomMembres = 'Pr. ' . $enc->nom . ' ' . $enc->prenom . '          ';
-        foreach ($membres as $m) {
-            $nomMembres .= 'Pr. ' . $m['prof']->nom . ' ' . $m['prof']->prenom . '          ';
-        }
-        $section->addTextBreak(1);
-        $section->addText($nomMembres, $normal);
-        $section->addTextBreak(1);
-
-        // Sauvegarde
-        $filename = $this->slug($etudiant->nom . '_' . $etudiant->prenom) . '.docx';
-        IOFactory::createWriter($phpWord, 'Word2007')
-            ->save($dir . DIRECTORY_SEPARATOR . $filename);
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    //  HELPERS
-    // ═══════════════════════════════════════════════════════════════
-
-    private function baseDoc(string $titre): PhpWord
-    {
+    //  HELPER : Convertit HTML en DOCX et retourne le chemin
+    private function htmlToDocx(
+        string  $html,
+        ?string $filename,
+        string  $orientation = 'portrait',
+        ?string $fullPath    = null
+    ): string {
         $phpWord = new PhpWord();
-        $phpWord->getSettings()->setThemeFontLang(new \PhpOffice\PhpWord\Style\Language('fr-FR'));
-        $phpWord->getDocInfo()->setTitle($titre);
-        $phpWord->getDocInfo()->setCreator('PFE Scheduler - ENSA Al-Hoceima');
         $phpWord->setDefaultFontName('Times New Roman');
         $phpWord->setDefaultFontSize(11);
-        return $phpWord;
+
+        $section = $phpWord->addSection([
+            'orientation'  => $orientation,
+            'paperSize'    => 'A4',
+            'marginTop'    => 600,
+            'marginBottom' => 400,
+            'marginLeft'   => 400,
+            'marginRight'  => 400,
+        ]);
+
+        //convertir le HTML en contenu Word.
+        // Les options false, false permettent de garder le style inline et d'éviter les sauts de page automatiques.
+        Html::addHtml($section, $html, false, false);
+
+        $path = $fullPath ?? ($this->outputDir . '/' . $filename);
+        IOFactory::createWriter($phpWord, 'Word2007')->save($path);
+
+        return $path;
     }
 
-    private function entete(\PhpOffice\PhpWord\Element\Section $s, string $titre): void
-    {
-        $s->addText(
-            $titre,
-            ['bold' => true, 'size' => 13, 'color' => self::BLEU_ENSA],
-            ['alignment' => Jc::CENTER, 'spaceAfter' => 40]
-        );
-    }
 
-    private function sousTitre(\PhpOffice\PhpWord\Element\Section $s, string $sub): void
-    {
-        $s->addText(
-            $sub,
-            ['size' => 10, 'italic' => true, 'color' => '555555'],
-            ['alignment' => Jc::CENTER, 'spaceAfter' => 100]
-        );
-    }
-
-    private function pied(\PhpOffice\PhpWord\Element\Section $s): void
-    {
-        $footer = $s->addFooter();
-        $footer->addText(
-            'Généré le ' . now()->format('d/m/Y'),
-            ['size' => 7, 'color' => '999999'],
-            ['alignment' => Jc::RIGHT]
-        );
-    }
-
-    private function titreFiliereTable(PhpWord $phpWord, $section, string $txt, int $largeur): void
-    {
-        // Nom de style unique par titre pour éviter les doublons PhpWord
-        $styleName = 'FilTitre_' . md5($txt);
-        $phpWord->addTableStyle($styleName, ['cellMargin' => 60]);
-        $t = $section->addTable($styleName);
-        $t->addRow(380);
-        $t->addCell($largeur, ['bgColor' => self::BLEU_ENSA])
-            ->addText(
-                $txt,
-                ['bold' => true, 'size' => 10, 'color' => self::BLANC],
-                ['alignment' => Jc::CENTER]
-            );
-    }
-
+    //  HELPERS ZIP / DOSSIER
     private function slug(string $name): string
     {
         $name = iconv('UTF-8', 'ASCII//TRANSLIT', $name) ?: $name;
@@ -553,8 +339,7 @@ class WordExporterService
 
     private function viderDossier(string $dir): void
     {
-        if (!is_dir($dir))
-            return;
+        if (!is_dir($dir)) return;
         $items = new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
             \RecursiveIteratorIterator::CHILD_FIRST
@@ -566,22 +351,23 @@ class WordExporterService
 
     private function zipper(string $source, string $zipPath): void
     {
-        if (file_exists($zipPath))
-            unlink($zipPath);
+        if (file_exists($zipPath)) unlink($zipPath);
         $zip = new ZipArchive();
-        if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
-            throw new \RuntimeException("Impossible de créer le ZIP.");
-        }
+        $zip->open($zipPath, ZipArchive::CREATE);
         $files = new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator($source, \FilesystemIterator::SKIP_DOTS),
             \RecursiveIteratorIterator::LEAVES_ONLY
         );
         foreach ($files as $file) {
-            if (!$file->isFile())
-                continue;
-            $relative = 'PV' . DIRECTORY_SEPARATOR . substr($file->getRealPath(), strlen($source) + 1);
-            $zip->addFile($file->getRealPath(), $relative);
+            if (!$file->isFile()) continue;
+            $zip->addFile(
+                $file->getRealPath(),
+                'PV/' . substr($file->getRealPath(), strlen($source) + 1)
+            );
         }
         $zip->close();
     }
+
 }
+
+   
