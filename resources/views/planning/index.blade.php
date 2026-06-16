@@ -49,6 +49,8 @@
                    min="1" max="10" required
                    style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; width: 70px;">
             <span style="color: #666; font-size: 13px; white-space: nowrap;">jours</span>
+
+            {{-- [MODIF] Heures précises (HH:MM) --}}
             <label for="heure_debut" style="font-weight: bold; color: #333; white-space: nowrap;">De :</label>
             <input type="time" name="heure_debut" id="heure_debut"
                    value="{{ old('heure_debut', '09:00') }}"
@@ -59,7 +61,18 @@
                    value="{{ old('heure_fin', '18:00') }}"
                    required
                    style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-            <span style="color: #666; font-size: 12px; white-space: nowrap;">(pause 12h-14h auto)</span>
+
+            {{-- [MODIF] Pause configurable — peut être vide (pas de pause) --}}
+            <span style="color: #333; font-weight: bold; white-space: nowrap;">| Pause :</span>
+            <input type="time" name="pause_debut" id="pause_debut"
+                   value="{{ old('pause_debut', '12:00') }}"
+                   style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+            <span style="color: #666; font-size: 13px;">→</span>
+            <input type="time" name="pause_fin" id="pause_fin"
+                   value="{{ old('pause_fin', '14:00') }}"
+                   style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+            <span style="color: #888; font-size: 11px; white-space: nowrap;">(vider pour aucune pause)</span>
+
             <button type="submit" class="btn-generer">Générer le planning</button>
         </form>
     </div>
@@ -87,6 +100,7 @@
             </select>
         </div>
 
+        {{-- [MODIF] Filières dynamiques — proviennent de la base de données --}}
         <div>
             <label>Filière :</label>
             <select id="filtre-filiere">

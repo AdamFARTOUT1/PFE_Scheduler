@@ -41,13 +41,18 @@ class ImportController extends Controller
                 $request->file('file_unified')->getRealPath()
             );
             
-            // Récupérer les statistiques actuelles
-            $tdia = \App\Models\Etudiant::where('filiere', 'TDIA')->count();
-            $id = \App\Models\Etudiant::where('filiere', 'ID')->count();
-            $gi = \App\Models\Etudiant::where('filiere', 'GI')->count();
+            // [MODIF] Message de succès dynamique — liste toutes les filières présentes
             $total = \App\Models\Etudiant::count();
+            $parFiliere = \App\Models\Etudiant::selectRaw('filiere, count(*) as total')
+                ->groupBy('filiere')
+                ->pluck('total', 'filiere')
+                ->toArray();
             
-            $message = "Importation réussie ! Total: $total étudiants (TDIA: $tdia, ID: $id, GI: $gi)";
+            $details = collect($parFiliere)
+                ->map(fn($count, $filiere) => "$filiere: $count")
+                ->implode(', ');
+            
+            $message = "Importation réussie ! Total: $total étudiants ($details)";
 
             return redirect()->back()->with('success', $message);
 

@@ -8,43 +8,66 @@ class DateTimeHelper
 {
     /**
      * Génère les créneaux horaires entre startDate et endDate.
-     * Si la plage horaire chevauche 12h, elle est automatiquement découpée
-     * en matin (heureDebut→12:00) et après-midi (14:00→heureFin).
+     *
+     * [MODIF] La pause est désormais configurable via $pauseDebut et $pauseFin.
+     * Si ces paramètres sont vides ou nuls, aucune pause n'est appliquée.
+     * Sinon, la plage est découpée autour de la pause (ex: pause déjeuner 12:00-14:00).
+     *
+     * @param string $startDate     Date de début (Y-m-d)
+     * @param string $endDate       Date de fin (Y-m-d)
+     * @param string $heureDebut    Heure de début du jour (HH:MM)
+     * @param string $heureFin      Heure de fin du jour (HH:MM)
+     * @param int    $slotMinutes   Durée d'un créneau en minutes
+     * @param string $pauseDebut    Heure de début de la pause (HH:MM), vide = pas de pause
+     * @param string $pauseFin      Heure de fin de la pause (HH:MM), vide = pas de pause
      */
     public function generate(
         string $startDate,
         string $endDate,
         string $heureDebut = '09:00',
         string $heureFin = '18:00',
-        int $slotMinutes = 60
+        int $slotMinutes = 60,
+        string $pauseDebut = '',
+        string $pauseFin = ''
     ): array {
         $slots = [];
         $start = Carbon::parse($startDate);
         $end = Carbon::parse($endDate);
 
-        // Déterminer les périodes en fonction de la pause déjeuner (12h-14h)
         $debut = Carbon::parse($heureDebut);
         $fin = Carbon::parse($heureFin);
-        $midi = Carbon::parse('12:00');
-        $aprem = Carbon::parse('14:00');
 
         $periods = [];
 
-        if ($fin->lte($midi)) {
-            // Tout le matin (ex: 09:00 → 11:00)
-            $periods[] = ['start' => $heureDebut, 'end' => $heureFin];
-        } elseif ($debut->gte($aprem)) {
-            // Tout l'après-midi (ex: 14:00 → 17:00)
-            $periods[] = ['start' => $heureDebut, 'end' => $heureFin];
-        } elseif ($debut->gte($midi) && $debut->lt($aprem)) {
-            // Début entre 12h et 14h → on décale à 14h
-            $periods[] = ['start' => '14:00', 'end' => $heureFin];
-        } else {
-            // La plage chevauche midi → on coupe en 2 avec pause 12h-14h
-            $periods[] = ['start' => $heureDebut, 'end' => '12:00'];
-            if ($fin->gt($aprem)) {
-                $periods[] = ['start' => '14:00', 'end' => $heureFin];
+        // [MODIF] Pause configurable au lieu du hardcode 12h-14h
+        $hasPause = !empty($pauseDebut) && !empty($pauseFin);
+
+        if ($hasPause) {
+            $pDebut = Carbon::parse($pauseDebut);
+            $pFin = Carbon::parse($pauseFin);
+
+            if ($fin->lte($pDebut)) {
+                // Toute la plage est avant la pause
+                $periods[] = ['start' => $heureDebut, 'end' => $heureFin];
+            } elseif ($debut->gte($pFin)) {
+                // Toute la plage est après la pause
+                $periods[] = ['start' => $heureDebut, 'end' => $heureFin];
+            } elseif ($debut->gte($pDebut) && $debut->lt($pFin)) {
+                // Début pendant la pause → on décale à la fin de la pause
+                if ($fin->gt($pFin)) {
+                    $periods[] = ['start' => $pauseFin, 'end' => $heureFin];
+                }
+                // sinon pas de créneau possible (toute la plage est dans la pause)
+            } else {
+                // La plage chevauche la pause → on coupe en 2
+                $periods[] = ['start' => $heureDebut, 'end' => $pauseDebut];
+                if ($fin->gt($pFin)) {
+                    $periods[] = ['start' => $pauseFin, 'end' => $heureFin];
+                }
             }
+        } else {
+            // Pas de pause → plage continue
+            $periods[] = ['start' => $heureDebut, 'end' => $heureFin];
         }
 
         while ($start->lte($end)) {

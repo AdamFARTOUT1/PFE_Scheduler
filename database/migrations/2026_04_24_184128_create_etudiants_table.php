@@ -13,8 +13,7 @@ return new class extends Migration
             $table->id();
             $table->string('nom',50);
             $table->string('prenom',50);
-            $table->enum('filiere',['ID','TDIA','GI']);
-            $table->enum('langue',['fr','en']);
+            $table->string('filiere', 50);
             $table->foreignID('professeur_ID')->nullable()->constrained('professeurs')->onDelete('set null');
             $table->timestamps();
         });

@@ -119,34 +119,7 @@ class VerificationController extends Controller
                 }
             }
         }
-        foreach ($plannings as $p) {
-    if (!$p->etudiant) continue;
-    
-    if ($p->etudiant->langue === 'EN') {
-        $profs = [
-            $p->encadrant,
-            $p->jury2,
-            $p->jury3
-        ];
-        
-        $aAnglais = false;
-        foreach ($profs as $prof) {
-            if ($prof && strtolower($prof->specialite) === 'anglais') {
-                $aAnglais = true;
-                break;
-            }
-        }
-        
-        if (!$aAnglais) {
-            $warnings[] = [
-                'titre' => 'PFE anglais sans prof anglais',
-                'detail' => ($p->etudiant->nom ?? '?') . ' ' . 
-                            ($p->etudiant->prenom ?? '') . 
-                            ' — soutenance en anglais mais aucun prof d\'anglais dans le jury'
-            ];
-        }
-    }
-}
+        // [MODIF] Vérification langue supprimée — colonne 'langue' retirée du modèle
 
         // Vérification 4 - Équilibre encadrants
         $moyenne = Etudiant::count() > 0 ? Etudiant::count() / Professeur::count() : 0;

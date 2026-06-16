@@ -61,6 +61,21 @@ class PdfExporterService
         $maxEtudiants = $professeurs->max(fn($p) => $p->etudiants->count());
         $maxEtudiants = max($maxEtudiants, 1);//minimum 1 colonne
 
+        // [MODIF] Palette de couleurs dynamique par filière
+        $filiereColors = [];
+        $palette = ['#a4d4f6ff', '#f8d983ff', '#b6f68bff', '#f4c2c2', '#d1c4e9', '#b2dfdb', '#ffe082', '#ffab91', '#c5cae9', '#bcaaa4'];
+        $colorIdx = 0;
+        // Collecter toutes les filières présentes
+        foreach ($professeurs as $prof) {
+            foreach ($prof->etudiants as $e) {
+                $fil = strtoupper(trim($e->filiere));
+                if (!isset($filiereColors[$fil])) {
+                    $filiereColors[$fil] = $palette[$colorIdx % count($palette)];
+                    $colorIdx++;
+                }
+            }
+        }
+
         // En-têtes colonnes étudiants
         $etudiantHeaders = '';
         for ($i = 1; $i <= $maxEtudiants; $i++) {
@@ -74,7 +89,8 @@ class PdfExporterService
             for ($i = 0; $i < $maxEtudiants; $i++) {
                 if (isset($etudiants[$i])) {
                     $e = $etudiants[$i];
-                    $bgColor = ($e->filiere === 'ID') ? '#a4d4f6ff' : '#f8d983ff'; // Bleu pour ID,jaune pour TDIA
+                    // [MODIF] Couleur dynamique par filière
+                    $bgColor = $filiereColors[strtoupper(trim($e->filiere))] ?? '#ffffff';
                     $cols .= "<td style='background-color: {$bgColor};'>" . strtoupper($e->nom) . " " . strtoupper($e->prenom) . "</td>";
                 } else {
                     $cols .= "<td class='vide'>—</td>";
@@ -87,11 +103,16 @@ class PdfExporterService
             </tr>";
         }
 
+        // [MODIF] Légende dynamique
+        $legendeItems = '';
+        foreach ($filiereColors as $filiere => $color) {
+            $legendeItems .= "<span style='background-color: {$color}; padding: 3px 6px; border: 1px solid #ccc; margin-left: 5px;'>Filière {$filiere}</span>";
+        }
+
         $sections = "
         <div class='legend' style='margin-bottom: 10px; font-size: 10px;'>
             <strong>Légende :</strong> 
-            <span style='background-color: #a4d4f6ff; padding: 3px 6px; border: 1px solid #ccc; margin-left: 5px;'>Filière ID</span>
-            <span style='background-color: #f8d983ff; padding: 3px 6px; border: 1px solid #ccc; margin-left: 10px;'>Filière TDIA</span>
+            {$legendeItems}
         </div>
         <div class='filiere-section'>
             <table>

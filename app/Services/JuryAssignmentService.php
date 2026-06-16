@@ -23,7 +23,7 @@ class JuryAssignmentService
         // Tous les professeurs sauf l'encadrant
         $candidats = $professeurs->filter(fn($prof) => $prof->id !== $encadrantId);
 
-        // Filtrer par disponibilité dans le créneau actuel (1h de pause obligatoire)
+        // Filtrer par disponibilité dans le créneau actuel
         if ($currentSlot !== null) {
             $candidats = $candidats->filter(function ($prof) use ($currentSlot, $planning) {
                 return $this->isProfAvailable($prof->id, $currentSlot, $planning);
@@ -40,40 +40,19 @@ class JuryAssignmentService
             if (isset($jury[1])) $charge[$jury[1]] = ($charge[$jury[1]] ?? 0) + 1;
         }
 
-        $jury = [];
-
-        // Si l'étudiant est anglophone, on prépare le prof d'anglais pour l'ajouter en dernier
-        $profAnglaisId = null;
-        if (strtolower($etudiant->langue ?? '') === 'en') {
-            $profAnglais = $candidats->first(function ($prof) {
-                $specialite = strtolower($prof->specialite ?? '');
-                return str_contains($specialite, 'anglais') || str_contains($specialite, 'english');
-            });
-
-            if ($profAnglais) {
-                $profAnglaisId = $profAnglais->id;
-                $candidats = $candidats->filter(fn($prof) => $prof->id !== $profAnglais->id);
-            }
-        }
-
-        // Combien de jurys reste-t-il à trouver ? (1 si on a un prof d'anglais, sinon 2)
-        $remaining = $profAnglaisId ? 1 : 2;
+        // [MODIF] Logique langue supprimée — on sélectionne toujours 2 jurys les moins chargés
+        $remaining = 2;
 
         if ($candidats->count() < $remaining) {
-            // Pas assez pour le quota, essayer avec ce qu'on a
             $remaining = $candidats->count();
         }
 
         // Choisir les professeurs les moins chargés pour compléter le jury
         $sorted = $candidats->sortBy(fn($prof) => $charge[$prof->id] ?? 0)->values();
 
+        $jury = [];
         for ($i = 0; $i < $remaining; $i++) {
             $jury[] = $sorted[$i]->id;
-        }
-
-        // Ajouter le prof d'anglais en dernier
-        if ($profAnglaisId) {
-            $jury[] = $profAnglaisId;
         }
 
         return $jury;

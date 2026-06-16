@@ -8,6 +8,7 @@ use App\Models\Creneau;
 use App\Models\Etudiant;
 use App\Models\Professeur;
 use App\Services\SchedulerService;
+use App\Utils\DateTimeHelper;
 
 class PlanningController extends Controller
 {
@@ -22,14 +23,21 @@ class PlanningController extends Controller
 
         $jours = $plannings->pluck('creneau.date_pfe')->unique()->filter()->values();
         $salles = Salle::all();
-        $filieres = ['ID', 'TDIA', 'GI'];
+
+        // [MODIF] Filières dynamiques — lues directement depuis la base de données
+        $filieres = Etudiant::select('filiere')
+            ->distinct()
+            ->pluck('filiere')
+            ->filter()
+            ->values()
+            ->all();
 
         return view('planning.index', compact('plannings', 'jours', 'salles', 'filieres'));
     }
 
     public function generer(\Illuminate\Http\Request $request)
     {
-        set_time_limit(120); // Le scheduling peut prendre du temps avec 3 filières
+        set_time_limit(120);
 
         $etudiants = Etudiant::all();
         $professeurs = Professeur::all();
@@ -46,13 +54,56 @@ class PlanningController extends Controller
         $nbJours = max(1, min(10, $nbJours)); // Sécurité : entre 1 et 10 jours
         $dateFin = \Carbon\Carbon::parse($dateDebut)->addDays($nbJours - 1)->toDateString();
 
-        // Heures de début et fin choisies par l'utilisateur
+        // [MODIF] Heures précises (HH:MM) choisies par l'utilisateur
         $heureDebut = $request->input('heure_debut', '09:00');
         $heureFin = $request->input('heure_fin', '18:00');
 
+        // [MODIF] Pause configurable — peut être nulle (0) ou un nombre de minutes
+        $pauseDebut = $request->input('pause_debut', '');
+        $pauseFin = $request->input('pause_fin', '');
+
+        // ─────────────────────────────────────────────────────────────
+        // [MODIF] VALIDATION MATHÉMATIQUE STRICTE — Capacité suffisante
+        // Formule : Capacité = NbJours × NbSalles × NbCréneauxParJourParSalle
+        // ─────────────────────────────────────────────────────────────
+        $dateTimeHelper = new DateTimeHelper();
+        $slotMinutes = 60; // durée d'une soutenance
+
+        $creneauxTest = $dateTimeHelper->generate(
+            $dateDebut, $dateFin, $heureDebut, $heureFin, $slotMinutes,
+            $pauseDebut, $pauseFin
+        );
+
+        if (empty($creneauxTest)) {
+            return redirect()->route('planning.index')
+                ->with('error', "Aucun créneau horaire disponible. Vérifiez les heures de début ($heureDebut) et de fin ($heureFin).");
+        }
+
+        // Calculer le nombre de créneaux par jour
+        $creneauxParJour = collect($creneauxTest)->groupBy('date');
+        $slotsParJour = $creneauxParJour->first() ? $creneauxParJour->first()->count() : 0;
+
+        $nbSalles = $salles->count();
+        $nbEtudiants = $etudiants->count();
+        $capaciteMax = $nbJours * $nbSalles * $slotsParJour;
+
+        if ($capaciteMax < $nbEtudiants) {
+            return redirect()->route('planning.index')
+                ->with('error', 
+                    "Capacité insuffisante : {$capaciteMax} places disponibles pour {$nbEtudiants} étudiants. " .
+                    "(Calcul : {$nbJours} jours × {$nbSalles} salles × {$slotsParJour} créneaux/jour = {$capaciteMax}). " .
+                    "Veuillez ajouter des jours, des salles ou élargir les plages horaires."
+                );
+        }
+
         try {
             $scheduler = app(SchedulerService::class);
-            $results = $scheduler->generate($etudiants, $professeurs, $salles, $dateDebut, $dateFin, $nbJours, $heureDebut, $heureFin);
+            $results = $scheduler->generate(
+                $etudiants, $professeurs, $salles,
+                $dateDebut, $dateFin, $nbJours,
+                $heureDebut, $heureFin,
+                $pauseDebut, $pauseFin // [MODIF] Passer les paramètres de pause
+            );
 
             // Vider le planning existant (plannings d'abord car il référence creneaux)
             Planning::query()->delete();

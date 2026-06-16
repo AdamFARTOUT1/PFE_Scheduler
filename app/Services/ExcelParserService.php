@@ -45,11 +45,11 @@ class ExcelParserService
             // Importer tous les étudiants (TDIA + ID ensemble)
             if ($etudiantsSheet) {
                 \Log::info("✓ Traitement feuille: Étudiants (TDIA + ID)");
+                // [MODIF] Colonne 'langue' supprimée — on ne lit plus que nom, prenom, filiere
                 $this->saveToDatabase($etudiantsSheet, Etudiant::class, [
                     'nom'     => 'A',
                     'prenom'  => 'B',
                     'filiere' => 'C',
-                    'langue'  => 'D'
                 ]);
             } else {
                 \Log::warning("✗ Feuille Étudiants non trouvée");
@@ -158,15 +158,7 @@ class ExcelParserService
                 $data['prenom'] = 'N/A';
             }
 
-            // Normalisation de la langue pour la table etudiants (enum 'fr', 'en')
-            if (isset($data['langue'])) {
-                $lang = strtolower(trim($data['langue']));
-                if ($lang === 'an' || str_contains($lang, 'anglais') || str_contains($lang, 'en')) {
-                    $data['langue'] = 'en';
-                } else {
-                    $data['langue'] = 'fr'; // par défaut
-                }
-            }
+            // [MODIF] Bloc de normalisation de la langue supprimé — colonne 'langue' retirée
             
             try {
                 // Chercher si existe déjà (insensible à la casse et accents)

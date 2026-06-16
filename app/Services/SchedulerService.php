@@ -31,10 +31,13 @@ class SchedulerService
         string $dateFin = '2026-05-15',
         int $nbJours = 3,
         string $heureDebut = '09:00',
-        string $heureFin = '18:00'
+        string $heureFin = '18:00',
+        string $pauseDebut = '',    // [MODIF] Pause configurable
+        string $pauseFin = ''       // [MODIF] Pause configurable
     ): array {
         $encadrants = $this->encadrantAssigner->assign($etudiants, $professeurs);
-        $creneaux = $this->dateTimeHelper->generate($dateDebut, $dateFin, $heureDebut, $heureFin);
+        // [MODIF] Passer les paramètres de pause au DateTimeHelper
+        $creneaux = $this->dateTimeHelper->generate($dateDebut, $dateFin, $heureDebut, $heureFin, 60, $pauseDebut, $pauseFin);
 
         $nbEtudiants = $etudiants->count();
         $nbSalles = $salles->count();
@@ -156,41 +159,41 @@ class SchedulerService
         return $bestPlanning;
     }
 
+    /**
+     * [MODIF] Génère les ordres de passage en intercalant dynamiquement toutes les filières
+     * détectées, au lieu de hardcoder ID/TDIA/GI.
+     */
     private function generateStudentOrders(Collection $etudiants): array
     {
         $professeurs = \App\Models\Professeur::all();
         $encadrants = $this->encadrantAssigner->assign($etudiants, $professeurs);
         
-        // Séparer par filière
-        $etudiantsID = $etudiants->filter(fn($e) => strtoupper($e->filiere) === 'ID')->values();
-        $etudiantsTDIA = $etudiants->filter(fn($e) => strtoupper($e->filiere) === 'TDIA')->values();
-        $etudiantsGI = $etudiants->filter(fn($e) => strtoupper($e->filiere) === 'GI')->values();
+        // Regrouper dynamiquement par filière (insensible à la casse)
+        $groupes = $etudiants->groupBy(fn($e) => strtoupper(trim($e->filiere)));
+        $filiereNames = $groupes->keys()->values()->all();
         
-        // Créer plusieurs ordres en intercalant ID, TDIA et GI
         $orders = [];
         for ($i = 0; $i < 20; $i++) {
-            $idCopy = $etudiantsID->shuffle()->values()->all();
-            $tdiaCopy = $etudiantsTDIA->shuffle()->values()->all();
-            $giCopy = $etudiantsGI->shuffle()->values()->all();
+            // Préparer les copies mélangées pour chaque filière
+            $copies = [];
+            $indices = [];
+            $totals = [];
+            foreach ($filiereNames as $filiere) {
+                $copies[$filiere] = $groupes[$filiere]->shuffle()->values()->all();
+                $indices[$filiere] = 0;
+                $totals[$filiere] = count($copies[$filiere]);
+            }
             
-            // Intercaler : 1 ID, 1 TDIA, 1 GI, ...
+            // Intercaler : 1 de chaque filière en round-robin
             $order = [];
-            $idIdx = 0;
-            $tdiaIdx = 0;
-            $giIdx = 0;
-            $totalID = count($idCopy);
-            $totalTDIA = count($tdiaCopy);
-            $totalGI = count($giCopy);
-            
-            while ($idIdx < $totalID || $tdiaIdx < $totalTDIA || $giIdx < $totalGI) {
-                if ($idIdx < $totalID) {
-                    $order[] = $idCopy[$idIdx++];
-                }
-                if ($tdiaIdx < $totalTDIA) {
-                    $order[] = $tdiaCopy[$tdiaIdx++];
-                }
-                if ($giIdx < $totalGI) {
-                    $order[] = $giCopy[$giIdx++];
+            $hasMore = true;
+            while ($hasMore) {
+                $hasMore = false;
+                foreach ($filiereNames as $filiere) {
+                    if ($indices[$filiere] < $totals[$filiere]) {
+                        $order[] = $copies[$filiere][$indices[$filiere]++];
+                        $hasMore = true;
+                    }
                 }
             }
             

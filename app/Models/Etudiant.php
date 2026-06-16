@@ -13,7 +13,6 @@ class Etudiant extends Model
         'nom', 
         'prenom', 
         'filiere', 
-        'langue', 
         'professeur_ID'
     ];
     

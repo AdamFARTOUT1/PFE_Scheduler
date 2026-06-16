@@ -46,21 +46,37 @@ class WordExporterService
 
         $max = max($professeurs->max(fn($p) => $p->etudiants->count()), 3);
 
+        // [MODIF] Palette de couleurs dynamique par filière
+        $filiereColors = [];
+        $palette = [self::TURQUOISE_ID, self::ORANGE_TDIA, self::GREEN_GI, '#f4c2c2', '#d1c4e9', '#b2dfdb', '#ffe082', '#ffab91', '#c5cae9', '#bcaaa4'];
+        $colorIdx = 0;
+        foreach ($professeurs as $prof) {
+            foreach ($prof->etudiants as $e) {
+                $fil = strtoupper(trim($e->filiere));
+                if (!isset($filiereColors[$fil])) {
+                    $filiereColors[$fil] = $palette[$colorIdx % count($palette)];
+                    $colorIdx++;
+                }
+            }
+        }
+
         $colonnes = '<th style="background-color:' . self::BLEU_ENSA . '; color:white; padding:3px; border:1px solid #999; font-size:10px;">Encadrant</th>';
         for ($i = 1; $i <= $max; $i++) {
             $colonnes .= "<th style='background-color:" . self::BLEU_ENSA . "; color:white; padding:3px; border:1px solid #999; font-size:10px;'>Etudiant {$i}</th>";
         }
 
+        // [MODIF] Légende dynamique
+        $legendeItems = '';
+        foreach ($filiereColors as $filiere => $color) {
+            $legendeItems .= "<span style='background-color:{$color}; color:white; padding:3px 8px; border-radius:3px;'>{$filiere}</span> ";
+        }
         $legende = "
         <div style='margin-bottom:8px; font-size:10px;'>
             <strong>Légende :</strong>
             <span style='display:inline-block; margin-left:20px;'>
-                <span style='background-color:" . self::TURQUOISE_ID . "; color:white; padding:3px 8px; border-radius:3px;'>ID</span>
-                <span style='background-color:" . self::ORANGE_TDIA . "; color:white; padding:3px 8px; border-radius:3px;'>TDIA</span>
-                <span style='background-color:" . self::GREEN_GI . "; color:white; padding:3px 8px; border-radius:3px;'>GI</span>
+                {$legendeItems}
             </span>
         </div>";
-
 
         $lignes = '';
         foreach ($professeurs as $prof) {
@@ -69,7 +85,8 @@ class WordExporterService
             for ($i = 0; $i < $max; $i++) {
                 if (isset($etudiants[$i])) {
                     $nom = strtoupper($etudiants[$i]->nom) . ' ' . strtoupper($etudiants[$i]->prenom);
-                    $bg = ($etudiants[$i]->filiere === 'ID') ? self::TURQUOISE_ID : (($etudiants[$i]->filiere === 'TDIA') ? self::ORANGE_TDIA : self::GREEN_GI);
+                    // [MODIF] Couleur dynamique par filière
+                    $bg = $filiereColors[strtoupper(trim($etudiants[$i]->filiere))] ?? self::BLANC;
                 } else {
                     $nom = '—';
                     $bg = self::BLANC;
@@ -286,12 +303,15 @@ class WordExporterService
                 $planning->jury2->nom . ' ' . $planning->jury2->prenom);
             $template->setValue('jury3',
                 $planning->jury3->nom . ' ' . $planning->jury3->prenom);
-            $template->setValue('check_id',
-                $etudiant->filiere === 'ID'   ? '☑' : '☐');
-            $template->setValue('check_tdia',
-                $etudiant->filiere === 'TDIA' ? '☑' : '☐');
-            $template->setValue('check_gi',
-                $etudiant->filiere === 'GI' ? '☑' : '☐');
+
+            // [MODIF] Checkboxes dynamiques — gère toute filière présente dans le template
+            // Les filières connues du template (check_xxx) : on coche la bonne
+            $allFilieres = \App\Models\Etudiant::select('filiere')->distinct()->pluck('filiere')->all();
+            foreach ($allFilieres as $fil) {
+                $varName = 'check_' . strtolower(trim($fil));
+                $template->setValue($varName,
+                    strtoupper(trim($etudiant->filiere)) === strtoupper(trim($fil)) ? '☑' : '☐');
+            }
 
             $filename = $this->slug($etudiant->nom . '_' . $etudiant->prenom) . '.docx';
             $template->saveAs($dir . '/' . $filename);
