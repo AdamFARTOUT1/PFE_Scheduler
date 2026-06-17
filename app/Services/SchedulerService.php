@@ -32,11 +32,11 @@ class SchedulerService
         int $nbJours = 3,
         string $heureDebut = '09:00',
         string $heureFin = '18:00',
-        string $pauseDebut = '',    // [MODIF] Pause configurable
-        string $pauseFin = ''       // [MODIF] Pause configurable
+        string $pauseDebut = '',    // Pause configurable
+        string $pauseFin = ''       // Pause configurable
     ): array {
         $encadrants = $this->encadrantAssigner->assign($etudiants, $professeurs);
-        // [MODIF] Passer les paramètres de pause au DateTimeHelper
+        // Passer les paramètres de pause au DateTimeHelper
         $creneaux = $this->dateTimeHelper->generate($dateDebut, $dateFin, $heureDebut, $heureFin, 60, $pauseDebut, $pauseFin);
 
         $nbEtudiants = $etudiants->count();
@@ -160,7 +160,7 @@ class SchedulerService
     }
 
     /**
-     * [MODIF] Génère les ordres de passage en intercalant dynamiquement toutes les filières
+     * Génère les ordres de passage en intercalant dynamiquement toutes les filières
      * détectées, au lieu de hardcoder ID/TDIA/GI.
      */
     private function generateStudentOrders(Collection $etudiants): array

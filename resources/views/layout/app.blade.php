@@ -7,6 +7,26 @@
     <title>@yield('titre', 'PFE Scheduler')</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ time() }}">
+
+    {{-- Styles dynamiques pour les filières lues depuis la base de données --}}
+    <style>
+        @foreach($_filiereColors ?? [] as $key => $color)
+        .badge-{{ $key }} {
+            background-color: {{ $color }};
+            color: #fff;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .cellule-{{ $key }} {
+            background-color: {{ $color }}33;
+            border-radius: 4px;
+            padding: 6px;
+        }
+        @endforeach
+    </style>
+
     @yield('styles')
 </head>
 

@@ -9,7 +9,7 @@ class DateTimeHelper
     /**
      * Génère les créneaux horaires entre startDate et endDate.
      *
-     * [MODIF] La pause est désormais configurable via $pauseDebut et $pauseFin.
+     * La pause est configurable via $pauseDebut et $pauseFin.
      * Si ces paramètres sont vides ou nuls, aucune pause n'est appliquée.
      * Sinon, la plage est découpée autour de la pause (ex: pause déjeuner 12:00-14:00).
      *
@@ -39,7 +39,7 @@ class DateTimeHelper
 
         $periods = [];
 
-        // [MODIF] Pause configurable au lieu du hardcode 12h-14h
+        // Pause configurable
         $hasPause = !empty($pauseDebut) && !empty($pauseFin);
 
         if ($hasPause) {

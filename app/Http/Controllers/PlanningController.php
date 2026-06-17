@@ -24,7 +24,7 @@ class PlanningController extends Controller
         $jours = $plannings->pluck('creneau.date_pfe')->unique()->filter()->values();
         $salles = Salle::all();
 
-        // [MODIF] Filières dynamiques — lues directement depuis la base de données
+        // Filières dynamiques - lues directement depuis la base de données
         $filieres = Etudiant::select('filiere')
             ->distinct()
             ->pluck('filiere')
@@ -54,16 +54,16 @@ class PlanningController extends Controller
         $nbJours = max(1, min(10, $nbJours)); // Sécurité : entre 1 et 10 jours
         $dateFin = \Carbon\Carbon::parse($dateDebut)->addDays($nbJours - 1)->toDateString();
 
-        // [MODIF] Heures précises (HH:MM) choisies par l'utilisateur
+        // Heures précises (HH:MM) choisies par l'utilisateur
         $heureDebut = $request->input('heure_debut', '09:00');
         $heureFin = $request->input('heure_fin', '18:00');
 
-        // [MODIF] Pause configurable — peut être nulle (0) ou un nombre de minutes
+        // Pause configurable - peut être nulle (0) ou un nombre de minutes
         $pauseDebut = $request->input('pause_debut', '');
         $pauseFin = $request->input('pause_fin', '');
 
         // ─────────────────────────────────────────────────────────────
-        // [MODIF] VALIDATION MATHÉMATIQUE STRICTE — Capacité suffisante
+        // VALIDATION MATHÉMATIQUE STRICTE - Capacité suffisante
         // Formule : Capacité = NbJours × NbSalles × NbCréneauxParJourParSalle
         // ─────────────────────────────────────────────────────────────
         $dateTimeHelper = new DateTimeHelper();
@@ -102,7 +102,7 @@ class PlanningController extends Controller
                 $etudiants, $professeurs, $salles,
                 $dateDebut, $dateFin, $nbJours,
                 $heureDebut, $heureFin,
-                $pauseDebut, $pauseFin // [MODIF] Passer les paramètres de pause
+                $pauseDebut, $pauseFin // Passer les paramètres de pause
             );
 
             // Vider le planning existant (plannings d'abord car il référence creneaux)

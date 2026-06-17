@@ -40,7 +40,7 @@ class JuryAssignmentService
             if (isset($jury[1])) $charge[$jury[1]] = ($charge[$jury[1]] ?? 0) + 1;
         }
 
-        // [MODIF] Logique langue supprimée — on sélectionne toujours 2 jurys les moins chargés
+
         $remaining = 2;
 
         if ($candidats->count() < $remaining) {

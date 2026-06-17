@@ -5,7 +5,6 @@
 /storage/*.key
 /vendor
 .env
-.env.example
 .env.backup
 .env.production
 .phpactor.json
@@ -32,7 +31,5 @@ Thumbs.db
 /storage/framework/views/*
 /storage/app/public/*
 /storage/app/outputs/*
-
-# Project Specific
 pfes.xlsx
 scratch.php

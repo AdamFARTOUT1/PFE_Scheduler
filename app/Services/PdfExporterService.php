@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Planning;
 use App\Models\Professeur;
+use App\Utils\FiliereColorHelper;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
@@ -36,7 +37,7 @@ class PdfExporterService
     }
 
     // ─────────────────────────────────────────────────────────────────
-    //  PLANNING — correspond exactement au PDF exemple
+    //  PLANNING - correspond exactement au PDF exemple
     //  Format : ID | Encadrant | Jury 1 | Jury 2 | Date | Heure | Salle | Nom | Prénom
     // ─────────────────────────────────────────────────────────────────
     public function generatePlanning(): string
@@ -53,7 +54,7 @@ class PdfExporterService
     }
 
     // ─────────────────────────────────────────────────────────────────
-    //  HTML — AFFECTATION
+    //  HTML - AFFECTATION
     // ─────────────────────────────────────────────────────────────────
     private function buildAffectationHtml($professeurs): string
     {
@@ -61,20 +62,8 @@ class PdfExporterService
         $maxEtudiants = $professeurs->max(fn($p) => $p->etudiants->count());
         $maxEtudiants = max($maxEtudiants, 1);//minimum 1 colonne
 
-        // [MODIF] Palette de couleurs dynamique par filière
-        $filiereColors = [];
-        $palette = ['#a4d4f6ff', '#f8d983ff', '#b6f68bff', '#f4c2c2', '#d1c4e9', '#b2dfdb', '#ffe082', '#ffab91', '#c5cae9', '#bcaaa4'];
-        $colorIdx = 0;
-        // Collecter toutes les filières présentes
-        foreach ($professeurs as $prof) {
-            foreach ($prof->etudiants as $e) {
-                $fil = strtoupper(trim($e->filiere));
-                if (!isset($filiereColors[$fil])) {
-                    $filiereColors[$fil] = $palette[$colorIdx % count($palette)];
-                    $colorIdx++;
-                }
-            }
-        }
+        // Couleurs dynamiques par filière (via FiliereColorHelper)
+        $filiereColors = FiliereColorHelper::getColors();
 
         // En-têtes colonnes étudiants
         $etudiantHeaders = '';
@@ -89,11 +78,11 @@ class PdfExporterService
             for ($i = 0; $i < $maxEtudiants; $i++) {
                 if (isset($etudiants[$i])) {
                     $e = $etudiants[$i];
-                    // [MODIF] Couleur dynamique par filière
-                    $bgColor = $filiereColors[strtoupper(trim($e->filiere))] ?? '#ffffff';
+                    // Couleur dynamique par filière
+                    $bgColor = FiliereColorHelper::getColor($e->filiere, $filiereColors);
                     $cols .= "<td style='background-color: {$bgColor};'>" . strtoupper($e->nom) . " " . strtoupper($e->prenom) . "</td>";
                 } else {
-                    $cols .= "<td class='vide'>—</td>";
+                    $cols .= "<td class='vide'>-</td>";
                 }
             }
             $rows .= "
@@ -103,9 +92,10 @@ class PdfExporterService
             </tr>";
         }
 
-        // [MODIF] Légende dynamique
+        // Légende dynamique
         $legendeItems = '';
-        foreach ($filiereColors as $filiere => $color) {
+        foreach ($filiereColors as $key => $color) {
+            $filiere = strtoupper($key);
             $legendeItems .= "<span style='background-color: {$color}; padding: 3px 6px; border: 1px solid #ccc; margin-left: 5px;'>Filière {$filiere}</span>";
         }
 
@@ -236,7 +226,7 @@ class PdfExporterService
     }
 
     // ─────────────────────────────────────────────────────────────────
-    //  HTML — PLANNING
+    //  HTML - PLANNING
     // ─────────────────────────────────────────────────────────────────
     private function buildPlanningHtml($plannings): string
     {
@@ -407,7 +397,7 @@ class PdfExporterService
                 </tbody>
             </table>
 
-            <div class="footer">Généré le {$date} — PFE Scheduler ENSA Al-Hoceima</div>
+            <div class="footer">Généré le {$date} - PFE Scheduler ENSA Al-Hoceima</div>
         </body>
         </html>
         HTML;

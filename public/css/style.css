@@ -162,32 +162,20 @@ body {
     gap: 15px;
 }
 
-/* ---- Badges filières ---- */
-.badge-id {
-    background-color: #3498db;
+/* ---- Badges filières (dynamiques) ----
+   Les classes .badge-{filiere} et .cellule-{filiere} sont générées
+   dynamiquement dans resources/views/layout/app.blade.php
+   en fonction des filières présentes dans la base de données.
+   Plus besoin de définir ici .badge-id, .badge-tdia, .badge-gi, etc.
+---- */
+/* Fallback générique si une filière n'a pas encore de couleur */
+[class^='badge-']:not(.badge):not(.badge-affectation):not(.badge-planning):not(.badge-pv) {
     color: #fff;
     padding: 3px 8px;
     border-radius: 4px;
     font-size: 12px;
     font-weight: bold;
-}
-
-.badge-tdia {
-    background-color: #27ae60;
-    color: #fff;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.badge-gi {
-    background-color: #8e44ad;
-    color: #fff;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: bold;
+    background-color: #95a5a6;
 }
 
 /* ---- Barres CSS ---- */
@@ -426,20 +414,5 @@ table tbody tr:hover {
     font-size: 14px;
 }
 
-.cellule-id {
-    background-color: #d6eaf8;
-    border-radius: 4px;
-    padding: 6px;
-}
-
-.cellule-tdia {
-    background-color: #d5f5e3;
-    border-radius: 4px;
-    padding: 6px;
-}
-
-.cellule-gi {
-    background-color: #e8daef;
-    border-radius: 4px;
-    padding: 6px;
-}
+/* Styles de cellules filières générés dynamiquement dans le layout */
+/* .cellule-{filiere} sont injectées via app.blade.php selon la base de données */

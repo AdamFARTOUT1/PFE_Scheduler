@@ -19,10 +19,9 @@ class ExcelParserService
             $sheetNames = $spreadsheet->getSheetNames();
             \Log::info("Feuilles trouvées: " . json_encode($sheetNames));
             
-            // Chercher les feuilles (flexible avec la casse)
+            // Chercher les feuilles spécifiques
             $sallesSheet = $this->findSheet($spreadsheet, ['Salles', 'salles', 'SALLES']);
             $profsSheet = $this->findSheet($spreadsheet, ['Professeurs', 'professeurs', 'PROFESSEURS', 'Profs', 'profs']);
-            $etudiantsSheet = $this->findSheet($spreadsheet, ['Étudiants', 'Etudiants', 'etudiants', 'ETUDIANTS', 'Etudiant', 'etudiant']);
             
             if ($sallesSheet) {
                 \Log::info("✓ Traitement feuille: Salles");
@@ -42,17 +41,45 @@ class ExcelParserService
                 \Log::warning("✗ Feuille Professeurs non trouvée");
             }
             
-            // Importer tous les étudiants (TDIA + ID ensemble)
+            // Importer toutes les autres feuilles comme des filières
+            $excludedSheets = ['salles', 'professeurs', 'profs', 'etudiants']; // Noms à exclure ou gérer différemment
+            $etudiantsImportes = false;
+
+            // D'abord, vérifier si on a une feuille globale "Etudiants"
+            $etudiantsSheet = $this->findSheet($spreadsheet, ['Étudiants', 'Etudiants', 'etudiants', 'ETUDIANTS', 'Etudiant', 'etudiant']);
             if ($etudiantsSheet) {
-                \Log::info("✓ Traitement feuille: Étudiants (TDIA + ID)");
-                // [MODIF] Colonne 'langue' supprimée — on ne lit plus que nom, prenom, filiere
+                \Log::info("✓ Traitement feuille globale: Étudiants");
                 $this->saveToDatabase($etudiantsSheet, Etudiant::class, [
                     'nom'     => 'A',
                     'prenom'  => 'B',
                     'filiere' => 'C',
                 ]);
-            } else {
-                \Log::warning("✗ Feuille Étudiants non trouvée");
+                $etudiantsImportes = true;
+            }
+
+            // Ensuite, parcourir toutes les feuilles pour voir si chaque feuille est une filière
+            foreach ($sheetNames as $sheetName) {
+                $lowerName = strtolower(trim($sheetName));
+                
+                // Si la feuille n'est pas Salles, Professeurs ou Etudiants globale, on la traite comme une filière
+                if (!in_array($lowerName, $excludedSheets)) {
+                    $sheet = $spreadsheet->getSheetByName($sheetName);
+                    \Log::info("✓ Traitement feuille filière spécifique: $sheetName");
+                    
+                    // Dans une feuille spécifique à une filière, la colonne A est Nom, B est Prénom.
+                    // On injecte le nom de la feuille comme filière par défaut.
+                    $this->saveToDatabase($sheet, Etudiant::class, [
+                        'nom'     => 'A',
+                        'prenom'  => 'B'
+                    ], [
+                        'filiere' => strtoupper(trim($sheetName))
+                    ]);
+                    $etudiantsImportes = true;
+                }
+            }
+
+            if (!$etudiantsImportes) {
+                \Log::warning("✗ Aucune feuille d'étudiants ou de filière trouvée");
             }
             
             \Log::info("✓ Importation unifiée terminée");
@@ -158,7 +185,7 @@ class ExcelParserService
                 $data['prenom'] = 'N/A';
             }
 
-            // [MODIF] Bloc de normalisation de la langue supprimé — colonne 'langue' retirée
+
             
             try {
                 // Chercher si existe déjà (insensible à la casse et accents)

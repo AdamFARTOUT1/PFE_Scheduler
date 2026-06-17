@@ -26,7 +26,7 @@ class VerificationController extends Controller
                 ) {
                     $erreurs[] = [
                         'titre' => 'Chevauchement de salle',
-                        'detail' => 'Salle ' . ($p1->salle->nom ?? '?') . ' — ' .
+                        'detail' => 'Salle ' . ($p1->salle->nom ?? '?') . ' : ' .
                                     ($p1->etudiant->nom ?? '?') . ' et ' .
                                     ($p2->etudiant->nom ?? '?') . ' au même créneau (' .
                                     ($p1->creneau->heure_debut ?? '?') . ')'
@@ -92,7 +92,7 @@ class VerificationController extends Controller
                         $erreurs[] = [
                             'titre' => 'Aucune pause entre 2 soutenances',
                             'detail' => ($prof->nom ?? '?') . ' ' . ($prof->prenom ?? '') .
-                                        ' — le ' . $date .
+                                        ' : le ' . $date .
                                         ' : soutenance à ' . ($p1->creneau->heure_debut ?? '?') .
                                         '-' . ($p1->creneau->heure_fin ?? '?') .
                                         ' puis à ' . ($p2->creneau->heure_debut ?? '?') .
@@ -108,7 +108,7 @@ class VerificationController extends Controller
                         $warnings[] = [
                             'titre' => 'Moins d\'1h de pause',
                             'detail' => ($prof->nom ?? '?') . ' ' . ($prof->prenom ?? '') .
-                                        ' — le ' . $date .
+                                        ' : le ' . $date .
                                         ' : soutenance à ' . ($p1->creneau->heure_debut ?? '?') .
                                         '-' . ($p1->creneau->heure_fin ?? '?') .
                                         ' puis à ' . ($p2->creneau->heure_debut ?? '?') .
@@ -119,7 +119,7 @@ class VerificationController extends Controller
                 }
             }
         }
-        // [MODIF] Vérification langue supprimée — colonne 'langue' retirée du modèle
+
 
         // Vérification 4 - Équilibre encadrants
         $moyenne = Etudiant::count() > 0 ? Etudiant::count() / Professeur::count() : 0;
@@ -134,7 +134,7 @@ class VerificationController extends Controller
                     'titre' => 'Déséquilibre encadrement',
                     'detail' => $prof->nom . ' ' . $prof->prenom .
                                 ' encadre ' . $prof->etudiants_count .
-                                ' étudiant(s) — moyenne : ' . round($moyenne, 1)
+                                ' étudiant(s) - moyenne : ' . round($moyenne, 1)
                 ];
             }
         }

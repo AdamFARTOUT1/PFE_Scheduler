@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Planning;
 use App\Models\Professeur;
+use App\Utils\FiliereColorHelper;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\Shared\Html;
@@ -46,28 +47,18 @@ class WordExporterService
 
         $max = max($professeurs->max(fn($p) => $p->etudiants->count()), 3);
 
-        // [MODIF] Palette de couleurs dynamique par filière
-        $filiereColors = [];
-        $palette = [self::TURQUOISE_ID, self::ORANGE_TDIA, self::GREEN_GI, '#f4c2c2', '#d1c4e9', '#b2dfdb', '#ffe082', '#ffab91', '#c5cae9', '#bcaaa4'];
-        $colorIdx = 0;
-        foreach ($professeurs as $prof) {
-            foreach ($prof->etudiants as $e) {
-                $fil = strtoupper(trim($e->filiere));
-                if (!isset($filiereColors[$fil])) {
-                    $filiereColors[$fil] = $palette[$colorIdx % count($palette)];
-                    $colorIdx++;
-                }
-            }
-        }
+        // Couleurs dynamiques par filière (via FiliereColorHelper)
+        $filiereColors = FiliereColorHelper::getColors();
 
         $colonnes = '<th style="background-color:' . self::BLEU_ENSA . '; color:white; padding:3px; border:1px solid #999; font-size:10px;">Encadrant</th>';
         for ($i = 1; $i <= $max; $i++) {
             $colonnes .= "<th style='background-color:" . self::BLEU_ENSA . "; color:white; padding:3px; border:1px solid #999; font-size:10px;'>Etudiant {$i}</th>";
         }
 
-        // [MODIF] Légende dynamique
+        // Légende dynamique
         $legendeItems = '';
-        foreach ($filiereColors as $filiere => $color) {
+        foreach ($filiereColors as $key => $color) {
+            $filiere = strtoupper($key);
             $legendeItems .= "<span style='background-color:{$color}; color:white; padding:3px 8px; border-radius:3px;'>{$filiere}</span> ";
         }
         $legende = "
@@ -85,10 +76,9 @@ class WordExporterService
             for ($i = 0; $i < $max; $i++) {
                 if (isset($etudiants[$i])) {
                     $nom = strtoupper($etudiants[$i]->nom) . ' ' . strtoupper($etudiants[$i]->prenom);
-                    // [MODIF] Couleur dynamique par filière
-                    $bg = $filiereColors[strtoupper(trim($etudiants[$i]->filiere))] ?? self::BLANC;
+                    $bg = FiliereColorHelper::getColor($etudiants[$i]->filiere, $filiereColors);
                 } else {
-                    $nom = '—';
+                    $nom = '-';
                     $bg = self::BLANC;
                 }
                 $cells .= "<td style='background-color:{$bg}; padding:2px; border:1px solid #ddd; text-align:center; font-size:9px;'>{$nom}</td>";
@@ -304,14 +294,16 @@ class WordExporterService
             $template->setValue('jury3',
                 $planning->jury3->nom . ' ' . $planning->jury3->prenom);
 
-            // [MODIF] Checkboxes dynamiques — gère toute filière présente dans le template
-            // Les filières connues du template (check_xxx) : on coche la bonne
+            // Checkboxes 100% dynamiques générées dans une seule variable
             $allFilieres = \App\Models\Etudiant::select('filiere')->distinct()->pluck('filiere')->all();
+            $checkboxesString = '';
             foreach ($allFilieres as $fil) {
-                $varName = 'check_' . strtolower(trim($fil));
-                $template->setValue($varName,
-                    strtoupper(trim($etudiant->filiere)) === strtoupper(trim($fil)) ? '☑' : '☐');
+                $filName = strtoupper(trim($fil));
+                $isChecked = (strtoupper(trim($etudiant->filiere)) === $filName) ? '☑' : '☐';
+                $checkboxesString .= "{$isChecked} {$filName}    ";
             }
+            // On assigne cette longue chaîne à un seul placeholder dans le Word
+            $template->setValue('filieres_checkboxes', trim($checkboxesString));
 
             $filename = $this->slug($etudiant->nom . '_' . $etudiant->prenom) . '.docx';
             $template->saveAs($dir . '/' . $filename);
